@@ -14,7 +14,6 @@
 
 #include <Hal.h>
 
-
 #include <interfaces_info.h>
 #include <rtems.h>
 
@@ -24,8 +23,6 @@
 
 #define NANOSECOND_IN_SECOND 1000000000
 
-/* static Timer_Apbctrl1 hal_timer_1; */
-/* static Timer_Apbctrl1 hal_timer_2; */
 static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
@@ -39,52 +36,16 @@ rtems_name generate_new_hal_semaphore_name()
 
 bool Hal_Init(void)
 {
-	/* Timer_Config config_1; */
-	/* config_1.isEnabled = true; */
-	/* config_1.isAutoReloaded = false; */
-	/* config_1.isInterruptEnabled = false; */
-	/* config_1.isChained = false; */
-	/* config_1.reloadValue = TIMER_START_VALUE; */
-
-	/* Timer_Config config_2; */
-	/* config_2.isEnabled = true; */
-	/* config_2.isAutoReloaded = false; */
-	/* config_2.isInterruptEnabled = false; */
-	/* config_2.isChained = true; */
-	/* config_2.reloadValue = TIMER_START_VALUE; */
-
-	/* Timer_Apbctrl1_init(Timer_Id_3, &hal_timer_1, defaultInterruptHandler); */
-	/* Timer_Apbctrl1_setBaseScalerReloadValue(&hal_timer_1, */
-	/* 					TIMER_SCALER_VALUE); */
-	/* Timer_Apbctrl1_setConfigRegisters(&hal_timer_1, &config_1); */
-	/* Timer_Apbctrl1_start(&hal_timer_1); */
-
-	/* Timer_Apbctrl1_init(Timer_Id_4, &hal_timer_2, defaultInterruptHandler); */
-	/* Timer_Apbctrl1_setBaseScalerReloadValue(&hal_timer_2, */
-	/* 					TIMER_SCALER_VALUE); */
-	/* Timer_Apbctrl1_setConfigRegisters(&hal_timer_2, &config_2); */
-	/* Timer_Apbctrl1_start(&hal_timer_2); */
-
 	return true;
 }
 
 uint64_t Hal_GetElapsedTimeInNs(void)
 {
   return 0;
-	/* return (uint64_t)Timer_Apbctrl1_getCounterValue(&hal_timer_2) << 32 | */
-	/*        Timer_Apbctrl1_getCounterValue(&hal_timer_1); */
 }
 
 bool Hal_SleepNs(uint64_t time_ns)
 {
-	/* const rtems_interval ticks_per_second = */
-	/*     rtems_clock_get_ticks_per_second(); */
-	/* const double ticks_per_ns = */
-	/*     (double)ticks_per_second / (double)NANOSECOND_IN_SECOND; */
-	/* const double sleep_tick_count = time_ns * ticks_per_ns; */
-
-	/* return rtems_task_wake_after((rtems_interval)sleep_tick_count) == */
-	/*        RTEMS_SUCCESSFUL; */
     return RTEMS_SUCCESSFUL;
 }
 
