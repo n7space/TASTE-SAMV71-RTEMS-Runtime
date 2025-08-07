@@ -39,7 +39,7 @@ static void UpdateActivationLog(const uint32_t index, const enum interfaces_enum
     _activation_log_buffer[_latest_activation_entry_index].timestamp = timestamp;
 }
 
-static bool HandleActivationLogCyclicInterface(const enum interfaces_enum interface, 
+static bool HandleActivationLogCyclicBuffer(const enum interfaces_enum interface, 
                                                const enum Monitor_EntryType entry_Type)
 {
     if(RT_EXEC_LOG_SIZE <= 0 || _is_frozen){
@@ -77,12 +77,12 @@ bool Monitor_Init()
 
 bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface)
 {
-    return HandleActivationLogCyclicInterface(interface, Monitor_EntryType_activation);
+    return HandleActivationLogCyclicBuffer(interface, Monitor_EntryType_activation);
 }
 
 bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface)
 {
-    return HandleActivationLogCyclicInterface(interface, Monitor_EntryType_deactivation);
+    return HandleActivationLogCyclicBuffer(interface, Monitor_EntryType_deactivation);
 }
 
 bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry *activation_log, 
