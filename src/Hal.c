@@ -58,17 +58,7 @@ void SysTick_Handler(void)
 bool Hal_Init(void)
 {
 	reloadsCounter = 0u;
-
     Systick_init(&systick, Systick_getDeviceRegisterStartAddress());
-
-    const Systick_Config config = {
-    	.clockSource = Systick_ClockSource_ProcessorClock,
-    	.isInterruptEnabled = true,
-    	.isEnabled = true,
-    	.reloadValue = HAL_CLOCK_SYSTICK_RELOAD,
-    };
-
-  	Systick_setConfig(&systick, &config);
 
 	return true;
 }
@@ -92,11 +82,7 @@ uint64_t Hal_GetElapsedTimeInNs(void)
 
 bool Hal_SleepNs(uint64_t time_ns)
 {
-	const rtems_interval ticks_per_second =
-	    rtems_clock_get_ticks_per_second();
-	const double ticks_per_ns =
-	    (double)ticks_per_second / (double)NANOSECOND_IN_SECOND;
-	const double sleep_tick_count = time_ns * ticks_per_ns;
+	const double sleep_tick_count = time_ns * TICKS_PER_NANOSECOND;
 
 	return rtems_task_wake_after((rtems_interval)sleep_tick_count) ==
 	       RTEMS_SUCCESSFUL;
