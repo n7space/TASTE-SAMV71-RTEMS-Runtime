@@ -21,25 +21,29 @@
 
 #include <interfaces_info.h>
 #include <rtems.h>
-#include "arm-bsp/src/Systick/Systick.h"
+#include "arm-bsp/src/Pmc/Pmc.h"
+#include "arm-bsp/src/Nvic/Nvic.h"
+#include "arm-bsp/src/Tic/Tic.h"
 #include "arm-bsp/src/Utils/ConcurrentAccessFlag.h"
 
 #ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
 #endif
 
+#define HAL_TICK_CHANNEL Nvic_Irq_Timer0_Channel0
 #define NANOSECOND_IN_SECOND 1000000000u
-
-#define TICKS_PER_RELOAD ((uint64_t)(HAL_CLOCK_SYSTICK_RELOAD + 1u))
-#define TICKS_PER_SECOND (N7S_BSP_CORE_CLOCK)
-#define TICKS_PER_NANOSECOND (TICKS_PER_SECOND / NANOSECOND_IN_SECOND)
+#define MEGA_HZ 1000000u
+#define TICKS_PER_RELOAD 65535ul
 
 static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
 static ConcurrentAccessFlag reloadsModifiedFlag;
 static uint32_t reloadsCounter;
-static Systick systick;
+static Pmc pmc;
+static Tic tic = {};
+
+static uint64_t mck_frequency;
 
 rtems_name generate_new_hal_semaphore_name();
 
@@ -49,16 +53,156 @@ rtems_name generate_new_hal_semaphore_name()
 	return name++;
 }
 
-void SysTick_Handler(void)
+void timer_irq_handler()
 {
-    __atomic_fetch_add(&reloadsCounter, 1u, __ATOMIC_SEQ_CST);
-  	ConcurrentAccessFlag_set(&reloadsModifiedFlag);
+	__atomic_fetch_add(&reloadsCounter, 1u, __ATOMIC_SEQ_CST);
+	ConcurrentAccessFlag_set(&reloadsModifiedFlag);
+}
+
+void extract_main_oscilator_frequency()
+{
+	Pmc_MainckConfig main_clock_config;
+	Pmc_getMainckConfig(&pmc, &main_clock_config);
+
+	switch(main_clock_config.rcOscFreq){
+		case Pmc_RcOscFreq_4M:
+		{
+			mck_frequency = 4 * MEGA_HZ;
+			break;
+		}
+		case Pmc_RcOscFreq_8M:
+		{
+			mck_frequency = 8 * MEGA_HZ;
+			break;
+		}
+#if defined(N7S_TARGET_SAMV71Q21)
+		case Pmc_RcOscFreq_12M:
+		{
+			mck_frequency = 12 * MEGA_HZ;
+			break;
+		}
+#elif defined(N7S_TARGET_SAMRH71F20) || defined(N7S_TARGET_SAMRH707F18)
+		case Pmc_RcOscFreq_10M:
+		{
+			mck_frequency = 10 * MEGA_HZ;
+			break;
+		}
+		case Pmc_RcOscFreq_12M:
+		{
+			mck_frequency = 12 * MEGA_HZ;
+			break;
+		}
+#endif
+	}
+}
+
+void apply_plla_config(Pmc_MasterckConfig *master_clock_config)
+{
+	if(master_clock_config->src == Pmc_MasterckSrc_Pllack){
+		Pmc_PllConfig pll_config;
+		Pmc_getPllConfig(&pmc, &pll_config);
+		if(pll_config.pllaDiv > 0 && pll_config.pllaMul > 0){
+			mck_frequency = (mck_frequency / pll_config.pllaDiv) * (pll_config.pllaMul + 1);
+		}
+		else if (pll_config.pllaDiv == 0 && pll_config.pllaMul > 0){
+			mck_frequency = mck_frequency * (pll_config.pllaMul + 1);
+		}
+		else if (pll_config.pllaDiv > 0 && pll_config.pllaMul == 0){
+			mck_frequency = mck_frequency / pll_config.pllaDiv;
+		}
+	}
+}
+
+void extract_mck_frequency()
+{
+	Pmc_MasterckConfig master_clock_config;
+	Pmc_getMasterckConfig(&pmc, &mckr_config);
+
+	extract_main_oscilator_frequency();
+	apply_plla_config(&master_clock_config);
+	
+	switch (master_clock_config.presc)
+	{
+		case Pmc_MasterckPresc_1:
+		{
+			break;
+		}
+		case Pmc_MasterckPresc_2:
+		{
+			mck_frequency = mck_frequency / 2;
+			break;
+		}
+		case Pmc_MasterckPresc_4:
+		{
+			mck_frequency = mck_frequency / 4;
+			break;
+		}
+		case Pmc_MasterckPresc_8:
+		{
+			mck_frequency = mck_frequency / 8;
+			break;
+		}
+		case Pmc_MasterckPresc_16:
+		{
+			mck_frequency = mck_frequency / 16;
+			break;
+		}
+		case Pmc_MasterckPresc_32:
+		{
+			mck_frequency = mck_frequency / 32;
+			break;
+		}
+		case Pmc_MasterckPresc_64:
+		{
+			mck_frequency = mck_frequency / 64;
+			break;
+		}
+#if defined(N7S_TARGET_SAMV71Q21)
+		case Pmc_MasterckPresc_3:
+		{
+			mck_frequency = mck_frequency / 7;
+			break;
+		}
+#endif
+	}
+
+	switch (master_clock_config.divider)
+	{
+		case Pmc_MasterckDiv_1:
+		{
+			break;
+		}
+		case Pmc_MasterckDiv_2:
+		{
+			mck_frequency = mck_frequency / 2;
+			break;
+		}
+	}
 }
 
 bool Hal_Init(void)
 {
 	reloadsCounter = 0u;
-    Systick_init(&systick, Systick_getDeviceRegisterStartAddress());
+    
+  	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
+  	Pmc_enablePeripheralClk(&pmc, Pmc_PeripheralId_Tc0Ch0);
+
+	extract_mck_frequency();
+
+  	Nvic_setInterruptHandlerAddress(HAL_TICK_CHANNEL, timer_irq_handler);
+	Nvic_enableInterrupt(HAL_TICK_CHANNEL);
+
+	Tic_init(&tic, Tic_Id_0);
+    Tic_writeProtect(&tic, false);
+
+	Tic_ChannelConfig config{};
+    config.isEnabled = true;
+    config.clockSource = Tic_ClockSelection_MckBy8;
+	config.irqConfig.isCounterOverflowIrqEnabled = true;
+    Tic_setChannelConfig(tic, HAL_TICK_CHANNEL, &config);
+
+    Tic_enableChannel(tic, HAL_TICK_CHANNEL);
+    Tic_triggerChannel(tic, HAL_TICK_CHANNEL);
 
 	return true;
 }
@@ -72,17 +216,17 @@ uint64_t Hal_GetElapsedTimeInNs(void)
   	{
     	ConcurrentAccessFlag_reset(&reloadsModifiedFlag);
     	reloads = __atomic_load_n(&reloadsCounter, __ATOMIC_SEQ_CST);
-    	ticks = HAL_CLOCK_SYSTICK_RELOAD - Systick_getCurrentValue(&systick);
+    	ticks = Tic_getCounterValue(&tic, HAL_TICK_CHANNEL);
   	} while (ConcurrentAccessFlag_check(&reloadsModifiedFlag));
 
 	const uint64_t total_ticks = (uint64_t)(reloads * TICKS_PER_RELOAD) + (uint64_t)ticks;
 
-  	return total_ticks / TICKS_PER_NANOSECOND;
+  	return total_ticks / (mck_frequency / NANOSECOND_IN_SECOND);
 }
 
 bool Hal_SleepNs(uint64_t time_ns)
 {
-	const double sleep_tick_count = time_ns * TICKS_PER_NANOSECOND;
+	const double sleep_tick_count = time_ns * (mck_frequency / NANOSECOND_IN_SECOND);
 
 	return rtems_task_wake_after((rtems_interval)sleep_tick_count) ==
 	       RTEMS_SUCCESSFUL;
