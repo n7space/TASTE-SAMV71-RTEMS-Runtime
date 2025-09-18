@@ -21,16 +21,15 @@
 
 #include <interfaces_info.h>
 #include <rtems.h>
-#include "arm-bsp/src/Pmc/Pmc.h"
-#include "arm-bsp/src/Nvic/Nvic.h"
-#include "arm-bsp/src/Tic/Tic.h"
-#include "arm-bsp/src/Utils/ConcurrentAccessFlag.h"
+#include <Pmc.h>
+#include <Nvic.h>
+#include <Tic.h>
+#include <ConcurrentAccessFlag.h>
 
 #ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
 #endif
 
-#define HAL_TICK_CHANNEL Nvic_Irq_Timer0_Channel0
 #define NANOSECOND_IN_SECOND 1000000000u
 #define MEGA_HZ 1000000u
 #define TICKS_PER_RELOAD 65535ul
@@ -116,7 +115,7 @@ void apply_plla_config(Pmc_MasterckConfig *master_clock_config)
 void extract_mck_frequency()
 {
 	Pmc_MasterckConfig master_clock_config;
-	Pmc_getMasterckConfig(&pmc, &mckr_config);
+	Pmc_getMasterckConfig(&pmc, &master_clock_config);
 
 	extract_main_oscilator_frequency();
 	apply_plla_config(&master_clock_config);
@@ -189,20 +188,20 @@ bool Hal_Init(void)
 
 	extract_mck_frequency();
 
-  	Nvic_setInterruptHandlerAddress(HAL_TICK_CHANNEL, timer_irq_handler);
-	Nvic_enableInterrupt(HAL_TICK_CHANNEL);
+  	Nvic_setInterruptHandlerAddress(Nvic_Irq_Timer0_Channel0, timer_irq_handler);
+	Nvic_enableInterrupt(Nvic_Irq_Timer0_Channel0);
 
 	Tic_init(&tic, Tic_Id_0);
     Tic_writeProtect(&tic, false);
 
-	Tic_ChannelConfig config{};
+	Tic_ChannelConfig config = {};
     config.isEnabled = true;
     config.clockSource = Tic_ClockSelection_MckBy8;
 	config.irqConfig.isCounterOverflowIrqEnabled = true;
-    Tic_setChannelConfig(tic, HAL_TICK_CHANNEL, &config);
+    Tic_setChannelConfig(&tic, Tic_Channel_0, &config);
 
-    Tic_enableChannel(tic, HAL_TICK_CHANNEL);
-    Tic_triggerChannel(tic, HAL_TICK_CHANNEL);
+    Tic_enableChannel(&tic, Tic_Channel_0);
+    Tic_triggerChannel(&tic, Tic_Channel_0);
 
 	return true;
 }
@@ -216,7 +215,7 @@ uint64_t Hal_GetElapsedTimeInNs(void)
   	{
     	ConcurrentAccessFlag_reset(&reloadsModifiedFlag);
     	reloads = __atomic_load_n(&reloadsCounter, __ATOMIC_SEQ_CST);
-    	ticks = Tic_getCounterValue(&tic, HAL_TICK_CHANNEL);
+    	ticks = Tic_getCounterValue(&tic, Tic_Channel_0);
   	} while (ConcurrentAccessFlag_check(&reloadsModifiedFlag));
 
 	const uint64_t total_ticks = (uint64_t)(reloads * TICKS_PER_RELOAD) + (uint64_t)ticks;
