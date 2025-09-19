@@ -1,0 +1,3 @@
+[submodule "arm-bsp"]
+	path = arm-bsp
+	url = git@github.com:n7space/arm-bsp.git
