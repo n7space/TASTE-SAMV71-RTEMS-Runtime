@@ -26,21 +26,24 @@
 #include <Tic.h>
 #include <ConcurrentAccessFlag.h>
 
-#ifndef RT_MAX_HAL_SEMAPHORE
+#ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
 #endif
 
 #define NANOSECOND_IN_SECOND 1000000000.0
-#define MAIN_CRYSTAL_OSCILLATOR_FREQUNECY 12
-#define CLOCK_SELECTION_PRESCALLER 8
 #define MEGA_HZ 1000000u
 #define TICKS_PER_RELOAD 65535ul
+#define CLOCK_SELECTION_PRESCALLER 8.0
+
+#ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUNECY
+#define MAIN_CRYSTAL_OSCILLATOR_FREQUNECY (12 * MEGA_HZ)
+#endif
 
 static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
-static ConcurrentAccessFlag reloadsModifiedFlag;
-static uint32_t reloadsCounter;
+static ConcurrentAccessFlag reloads_modified_flag;
+static uint32_t reloads_counter;
 static Pmc pmc;
 static Tic tic = {};
 
@@ -56,8 +59,8 @@ rtems_name generate_new_hal_semaphore_name()
 
 void timer_irq_handler()
 {
-	__atomic_fetch_add(&reloadsCounter, 1u, __ATOMIC_SEQ_CST);
-	ConcurrentAccessFlag_set(&reloadsModifiedFlag);
+	__atomic_fetch_add(&reloads_counter, 1u, __ATOMIC_SEQ_CST);
+	ConcurrentAccessFlag_set(&reloads_modified_flag);
 
 	Tic_ChannelStatus status;
 	Tic_getChannelStatus(&tic, Tic_Channel_0, &status);
@@ -69,7 +72,7 @@ void extract_main_oscilator_frequency()
 	Pmc_getMainckConfig(&pmc, &main_clock_config);
 
 	if(main_clock_config.src == Pmc_MainckSrc_XOsc){
-		mck_frequency = MAIN_CRYSTAL_OSCILLATOR_FREQUNECY * MEGA_HZ;
+		mck_frequency = MAIN_CRYSTAL_OSCILLATOR_FREQUNECY;
 		return;
 	}
 
@@ -191,7 +194,7 @@ void extract_mck_frequency()
 
 bool Hal_Init(void)
 {
-	reloadsCounter = 0u;
+	reloads_counter = 0u;
     
   	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
   	Pmc_enablePeripheralClk(&pmc, Pmc_PeripheralId_Tc0Ch0);
@@ -223,15 +226,15 @@ uint64_t Hal_GetElapsedTimeInNs(void)
 
 	do
   	{
-    	ConcurrentAccessFlag_reset(&reloadsModifiedFlag);
-    	reloads = __atomic_load_n(&reloadsCounter, __ATOMIC_SEQ_CST);
+    	ConcurrentAccessFlag_reset(&reloads_modified_flag);
+    	reloads = __atomic_load_n(&reloads_counter, __ATOMIC_SEQ_CST);
     	ticks = Tic_getCounterValue(&tic, Tic_Channel_0);
-  	} while (ConcurrentAccessFlag_check(&reloadsModifiedFlag));
+  	} while (ConcurrentAccessFlag_check(&reloads_modified_flag));
 
 	const uint64_t total_ticks = (uint64_t)(reloads * TICKS_PER_RELOAD) + (uint64_t)ticks;
+	const double clock_frequency = (double)mck_frequency / CLOCK_SELECTION_PRESCALLER;
 
-	uint64_t clock_frequency = mck_frequency / CLOCK_SELECTION_PRESCALLER;
-  	return (uint64_t)((double)total_ticks / ((double)clock_frequency / NANOSECOND_IN_SECOND));
+  	return (uint64_t)((double)total_ticks / (clock_frequency / NANOSECOND_IN_SECOND));
 }
 
 bool Hal_SleepNs(uint64_t time_ns)
