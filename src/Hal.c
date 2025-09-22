@@ -26,11 +26,13 @@
 #include <Tic.h>
 #include <ConcurrentAccessFlag.h>
 
-#ifndef RT_MAX_HAL_SEMAPHORES
+#ifndef RT_MAX_HAL_SEMAPHORE
 #define RT_MAX_HAL_SEMAPHORES 8
 #endif
 
-#define NANOSECOND_IN_SECOND 1000000000u
+#define NANOSECOND_IN_SECOND 1000000000.0
+#define MAIN_CRYSTAL_OSCILLATOR_FREQUNECY 12
+#define CLOCK_SELECTION_PRESCALLER 8
 #define MEGA_HZ 1000000u
 #define TICKS_PER_RELOAD 65535ul
 
@@ -56,12 +58,20 @@ void timer_irq_handler()
 {
 	__atomic_fetch_add(&reloadsCounter, 1u, __ATOMIC_SEQ_CST);
 	ConcurrentAccessFlag_set(&reloadsModifiedFlag);
+
+	Tic_ChannelStatus status;
+	Tic_getChannelStatus(&tic, Tic_Channel_0, &status);
 }
 
 void extract_main_oscilator_frequency()
 {
 	Pmc_MainckConfig main_clock_config;
 	Pmc_getMainckConfig(&pmc, &main_clock_config);
+
+	if(main_clock_config.src == Pmc_MainckSrc_XOsc){
+		mck_frequency = MAIN_CRYSTAL_OSCILLATOR_FREQUNECY * MEGA_HZ;
+		return;
+	}
 
 	switch(main_clock_config.rcOscFreq){
 		case Pmc_RcOscFreq_4M:
@@ -220,12 +230,13 @@ uint64_t Hal_GetElapsedTimeInNs(void)
 
 	const uint64_t total_ticks = (uint64_t)(reloads * TICKS_PER_RELOAD) + (uint64_t)ticks;
 
-  	return total_ticks / (mck_frequency / NANOSECOND_IN_SECOND);
+	uint64_t clock_frequency = mck_frequency / CLOCK_SELECTION_PRESCALLER;
+  	return (uint64_t)((double)total_ticks / ((double)clock_frequency / NANOSECOND_IN_SECOND));
 }
 
 bool Hal_SleepNs(uint64_t time_ns)
 {
-	const double sleep_tick_count = time_ns * (mck_frequency / NANOSECOND_IN_SECOND);
+	const double sleep_tick_count = time_ns * ((double)mck_frequency / NANOSECOND_IN_SECOND);
 
 	return rtems_task_wake_after((rtems_interval)sleep_tick_count) ==
 	       RTEMS_SUCCESSFUL;
