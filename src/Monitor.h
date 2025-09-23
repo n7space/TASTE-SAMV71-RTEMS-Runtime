@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "interfaces_info.h"
 
 enum Monitor_EntryType {
     Monitor_EntryType_activation = 0,
@@ -68,18 +69,18 @@ bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface);
 bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface);
 
 /**
- * @brief                       Provides access to optional interface activation log.
+ * @brief                                           Provides access to optional interface activation log.
  *
- * @param[in] activation_log                    pointer pointing to beginning of cyclic buffer holding 
- *                                              all activation entries
- * @param[in] latest_activation_entry_index     representing latest activation log index
- * @param[in] size_of_activation_log            representing size of activation log
+ * @param[in] activation_log                        pointer pointing to beginning of cyclic buffer holding 
+ *                                                  all activation entries
+ * @param[in] out_latest_activation_entry_index     representing latest activation log index
+ * @param[in] out_size_of_activation_log            representing size of activation log
  * 
- * @return                      Bool indicating whether the query was successful
+ * @return                                          Bool indicating whether the query was successful
  */
 bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry *activation_log, 
-                                            uint32_t *latest_activation_entry_index, 
-                                            uint32_t *size_of_activation_log);
+                                            uint32_t *out_latest_activation_entry_index, 
+                                            uint32_t *out_size_of_activation_log);
 
 /**
  * @brief                       Stops storing of interface activation logs, all activation 
