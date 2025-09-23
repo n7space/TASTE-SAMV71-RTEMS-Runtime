@@ -20,48 +20,48 @@
 #endif
 
 #if RT_EXEC_LOG_SIZE <= 0
-static struct Monitor_InterfaceActivationEntry *_activation_log_buffer = NULL;
+static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
 #else
-static struct Monitor_InterfaceActivationEntry _activation_log_buffer[RT_EXEC_LOG_SIZE];
+static struct Monitor_InterfaceActivationEntry activation_log_buffer[RT_EXEC_LOG_SIZE];
 #endif
 
-static bool _is_frozen = true;
-static uint32_t _latest_activation_entry_index = 0;
-static uint32_t _size_of_activation_log = 0;
+static bool is_frozen = true;
+static uint32_t latest_activation_entry_index = 0;
+static uint32_t size_of_activation_log = 0;
 
 static void UpdateActivationLog(const uint32_t index, const enum interfaces_enum interface, 
                                 const enum Monitor_EntryType entry_type)
 {
-    uint64_t timestamp = Hal_GetElapsedTimeInNs();
+    const uint64_t timestamp = Hal_GetElapsedTimeInNs();
 
-    _activation_log_buffer[_latest_activation_entry_index].interface = interface;
-    _activation_log_buffer[_latest_activation_entry_index].entry_type = entry_type;
-    _activation_log_buffer[_latest_activation_entry_index].timestamp = timestamp;
+    activation_log_buffer[latest_activation_entry_index].interface = interface;
+    activation_log_buffer[latest_activation_entry_index].entry_type = entry_type;
+    activation_log_buffer[latest_activation_entry_index].timestamp = timestamp;
 }
 
 static bool HandleActivationLogCyclicBuffer(const enum interfaces_enum interface, 
-                                               const enum Monitor_EntryType entry_Type)
+                                            const enum Monitor_EntryType entry_Type)
 {
-    if(RT_EXEC_LOG_SIZE <= 0 || _is_frozen){
+    if(RT_EXEC_LOG_SIZE <= 0 || is_frozen){
         return false;
     }
 
-    if(_latest_activation_entry_index == 0 && _size_of_activation_log == 0){
-        UpdateActivationLog(_latest_activation_entry_index, interface, entry_Type);
-        _size_of_activation_log++;
+    if(latest_activation_entry_index == 0 && size_of_activation_log == 0){
+        UpdateActivationLog(latest_activation_entry_index, interface, entry_Type);
+        size_of_activation_log++;
     }
-    else if((_latest_activation_entry_index < RT_EXEC_LOG_SIZE - 1) && (_size_of_activation_log < RT_EXEC_LOG_SIZE)){
-        _latest_activation_entry_index++;
-        UpdateActivationLog(_latest_activation_entry_index, interface, entry_Type);
-        _size_of_activation_log++;
+    else if((latest_activation_entry_index < RT_EXEC_LOG_SIZE - 1) && (size_of_activation_log < RT_EXEC_LOG_SIZE)){
+        latest_activation_entry_index++;
+        UpdateActivationLog(latest_activation_entry_index, interface, entry_Type);
+        size_of_activation_log++;
     }
-    else if((_latest_activation_entry_index == RT_EXEC_LOG_SIZE - 1) && (_size_of_activation_log == RT_EXEC_LOG_SIZE)){
-        _latest_activation_entry_index = 0;
-        UpdateActivationLog(_latest_activation_entry_index, interface, entry_Type);
+    else if((latest_activation_entry_index == RT_EXEC_LOG_SIZE - 1) && (size_of_activation_log == RT_EXEC_LOG_SIZE)){
+        latest_activation_entry_index = 0;
+        UpdateActivationLog(latest_activation_entry_index, interface, entry_Type);
     }
-    else if((_latest_activation_entry_index < RT_EXEC_LOG_SIZE - 1) && (_size_of_activation_log == RT_EXEC_LOG_SIZE)){
-        _latest_activation_entry_index++;
-        UpdateActivationLog(_latest_activation_entry_index, interface, entry_Type);
+    else if((latest_activation_entry_index < RT_EXEC_LOG_SIZE - 1) && (size_of_activation_log == RT_EXEC_LOG_SIZE)){
+        latest_activation_entry_index++;
+        UpdateActivationLog(latest_activation_entry_index, interface, entry_Type);
     }
     else{
         return false;
@@ -93,9 +93,9 @@ bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEn
         return false;
     }
 
-    activation_log = _activation_log_buffer;
-    *latest_activation_entry_index = _latest_activation_entry_index;
-    *size_of_activation_log = _size_of_activation_log;
+    activation_log = activation_log_buffer;
+    *latest_activation_entry_index = latest_activation_entry_index;
+    *size_of_activation_log = size_of_activation_log;
 
     return true;
 }
@@ -106,7 +106,7 @@ bool Monitor_FreezeInterfaceActivationLogging()
         return false;
     }
 
-    _is_frozen = true;
+    is_frozen = true;
 
     return true;
 }
@@ -117,7 +117,7 @@ bool Monitor_UnfreezeInterfaceActivationLogging()
         return false;
     }
 
-    _is_frozen = false;
+    is_frozen = false;
 
     return true;
 }
@@ -128,8 +128,8 @@ bool Monitor_ClearInterfaceActivationLog()
         return false;
     }
 
-    _latest_activation_entry_index = 0;
-    _size_of_activation_log = 0;
+    latest_activation_entry_index = 0;
+    size_of_activation_log = 0;
 
     return true;
 }
