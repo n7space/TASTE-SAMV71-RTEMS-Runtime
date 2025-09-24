@@ -1,0 +1,94 @@
+#ifndef HAL_USART_REGISTERS_H
+#define HAL_USART_REGISTERS_H
+
+#define MATRIX_CCFG_SYSIO_ADDR 0x40088114u
+#define MATRIX_CCFG_SYSIO_SYSIO4_OFFSET 4uL
+#define MATRIX_CCFG_SYSIO_PB4_SELECTED 1u
+
+#define USART_CR_OFFSET     0x00000000u
+#define USART_CR_TXEN_MASK  0x00000040u
+#define USART_CR_TXEN_OFFSET 6u
+#define USART_CR_TXEN_ENABLE 1u
+
+#define USART_MR_OFFSET                 0x00000004u
+#define USART_MR_MODE_MASK              0x0000000Fu
+#define USART_MR_MODE_OFFSET            0u
+#define USART_MR_MODE_NORMAL            0u
+#define USART_MR_USCLKS_MASK            0x00000030u
+#define USART_MR_USCLKS_OFFSET          4u
+#define USART_MR_USCLKS_MCK             0u
+#define USART_MR_USCLKS_DIV             1u
+#define USART_MR_USCLKS_SCK             3u
+#define USART_MR_CHRL_MASK              0x000000C0u
+#define USART_MR_CHRL_OFFSET            6u
+#define USART_MR_CHRL_8BIT              3u
+#define USART_MR_SYNC_MASK              0x00000100u
+#define USART_MR_SYNC_OFFSET            8u
+#define USART_MR_SYNC_ASYNCHRONOUS      0u
+#define USART_MR_SYNC_SYNCHRONOUS       1u
+#define USART_MR_PAR_MASK               0x00000E00u
+#define USART_MR_PAR_OFFSET             9u
+#define USART_MR_PAR_NO                 4u
+#define USART_MR_NBSTOP_MASK            0x00003000u
+#define USART_MR_NBSTOP_OFFSET          12
+#define USART_MR_NBSTOP_1_BIT           0u
+#define USART_MR_CHMODE_MASK            0x0000C000u
+#define USART_MR_CHMODE_OFFSET          14u
+#define USART_MR_CHMODE_NORMAL          0u
+#define USART_MR_MSBF_MASK              0x00010000u
+#define USART_MR_MSBF_OFFSET            16u
+#define USART_MR_MSBF_LSB               0u
+#define USART_MR_MODE9_MASK             0x00020000u
+#define USART_MR_MODE9_OFFSET           17u
+#define USART_MR_MODE9_CHRL             0u
+#define USART_MR_CLKO_MASK              0x00040000u
+#define USART_MR_CLKO_OFFSET            18u
+#define USART_MR_CLKO_NO_SCK            0u
+#define USART_MR_OVER_MASK              0x00080000u
+#define USART_MR_OVER_OFFSET            19u
+#define USART_MR_OVER_16X               0
+#define USART_MR_INACK_MASK             0x00100000u
+#define USART_MR_INACK_OFFSET           20u
+#define USART_MR_INACK_NOT_GEN          0u
+#define USART_MR_DSNACK_MASK            0x00200000u
+#define USART_MR_DSNACK_OFFSET          21u
+#define USART_MR_DSNACK_NO_NACK         0u
+#define USART_MR_VAR_SYNC_MASK          0x00400000u
+#define USART_MR_VAR_SYNC_OFFSET        22u
+#define USART_MR_VAR_SYNC_DISABLE       0u 
+#define USART_MR_INVDATA_MASK           0x00800000u
+#define USART_MR_INVDATA_OFFSET         23u
+#define USART_MR_INVDATA_DISABLED       0u
+#define USART_MR_MAX_ITERATION_MASK     0x07000000   
+#define USART_MR_MAX_ITERATION_OFFSET   24u
+#define USART_MR_MAX_ITERATION_DISABLE  0u     
+#define USART_MR_FILTER_MASK            0x10000000
+#define USART_MR_FILTER_OFFSET          28u
+#define USART_MR_FILTER_DISABLE         0u   
+#define USART_MR_MAN_MASK               0x20000000
+#define USART_MR_MAN_OFFSET             29u
+#define USART_MR_MAN_DISABLE            0u
+#define USART_MR_MODSYNC_MASK           0x40000000
+#define USART_MR_MODSYNC_OFFSET         30u
+#define USART_MR_MODSYNC_DISABLE        0u 
+#define USART_MR_ONEBIT_MASK            0x80000000
+#define USART_MR_ONEBIT_OFFSET          31u
+#define USART_MR_ONEBIT_1_BIT           1u
+
+#define USART_CSR_OFFSET 0x00000014u
+#define USART_CSR_TXRDY_MASK 0x00000002u
+
+#define USART_BRGR_OFFSET   0x00000020u
+#define USART_BRGR_FINE_DIV_OFFSET 16u
+
+#define USART_THR_OFFSET 0x0000001Cu
+
+#define USART1_ADDRESS_BASE 0x40028000u
+
+#define USART1_CR_ADDRESS (USART1_ADDRESS_BASE + USART_CR_OFFSET)
+#define USART1_MR_ADDRESS (USART1_ADDRESS_BASE + USART_MR_OFFSET)
+#define USART1_CSR_ADDRESS (USART1_ADDRESS_BASE + USART_CSR_OFFSET)
+#define USART1_BRGR_ADDRESS (USART1_ADDRESS_BASE + USART_BRGR_OFFSET)
+#define USART1_THR_ADDRESS (USART1_ADDRESS_BASE + USART_THR_OFFSET)
+
+#endif
