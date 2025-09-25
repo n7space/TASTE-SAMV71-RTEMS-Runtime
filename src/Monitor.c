@@ -30,47 +30,20 @@ static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
 static struct Monitor_InterfaceActivationEntry activation_log_buffer[RT_EXEC_LOG_SIZE];
 #endif
 
-static bool is_frozen = true;
-static uint32_t latest_activation_entry_index = 0;
-static uint32_t size_of_activation_log = 0;
+static volatile bool is_frozen = true;
+static uint32_t activation_entry_counter = 0;
 
-static void UpdateActivationLog(const uint32_t index, const enum interfaces_enum interface, 
-                                const enum Monitor_EntryType entry_type)
-{
-    const uint64_t timestamp = Hal_GetElapsedTimeInNs();
-
-    activation_log_buffer[latest_activation_entry_index].interface = interface;
-    activation_log_buffer[latest_activation_entry_index].entry_type = entry_type;
-    activation_log_buffer[latest_activation_entry_index].timestamp = timestamp;
-}
-
-static bool HandleActivationLogCyclicBuffer(const enum interfaces_enum interface, 
-                                            const enum Monitor_EntryType entry_Type)
+static bool handle_activation_log_cyclic_buffer(const enum interfaces_enum interface, 
+                                                const enum Monitor_EntryType entry_type)
 {
     if(RT_EXEC_LOG_SIZE <= 0 || is_frozen){
         return false;
     }
 
-    if(latest_activation_entry_index == 0 && size_of_activation_log == 0){
-        UpdateActivationLog(latest_activation_entry_index, interface, entry_Type);
-        size_of_activation_log++;
-    }
-    else if((latest_activation_entry_index < RT_EXEC_LOG_SIZE - 1) && (size_of_activation_log < RT_EXEC_LOG_SIZE)){
-        latest_activation_entry_index++;
-        UpdateActivationLog(latest_activation_entry_index, interface, entry_Type);
-        size_of_activation_log++;
-    }
-    else if((latest_activation_entry_index == RT_EXEC_LOG_SIZE - 1) && (size_of_activation_log == RT_EXEC_LOG_SIZE)){
-        latest_activation_entry_index = 0;
-        UpdateActivationLog(latest_activation_entry_index, interface, entry_Type);
-    }
-    else if((latest_activation_entry_index < RT_EXEC_LOG_SIZE - 1) && (size_of_activation_log == RT_EXEC_LOG_SIZE)){
-        latest_activation_entry_index++;
-        UpdateActivationLog(latest_activation_entry_index, interface, entry_Type);
-    }
-    else{
-        return false;
-    }
+    activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE].interface = interface;
+    activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE].entry_type = entry_type;
+    activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE].timestamp = Hal_GetElapsedTimeInNs();
+    activation_entry_counter++;
 
     return true;
 }
@@ -82,12 +55,12 @@ bool Monitor_Init()
 
 bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface)
 {
-    return HandleActivationLogCyclicBuffer(interface, Monitor_EntryType_activation);
+    return handle_activation_log_cyclic_buffer(interface, Monitor_EntryType_activation);
 }
 
 bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface)
 {
-    return HandleActivationLogCyclicBuffer(interface, Monitor_EntryType_deactivation);
+    return handle_activation_log_cyclic_buffer(interface, Monitor_EntryType_deactivation);
 }
 
 bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry *activation_log, 
@@ -99,8 +72,21 @@ bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEn
     }
 
     activation_log = activation_log_buffer;
-    *out_latest_activation_entry_index = latest_activation_entry_index;
-    *out_size_of_activation_log = size_of_activation_log;
+
+    if(activation_entry_counter == 0){
+        *out_latest_activation_entry_index = 0;
+        *out_size_of_activation_log = 0;
+    }
+    else{
+        *out_latest_activation_entry_index = (activation_entry_counter % RT_EXEC_LOG_SIZE) - 1;
+
+        if(activation_entry_counter > RT_EXEC_LOG_SIZE){
+            *out_size_of_activation_log = RT_EXEC_LOG_SIZE;
+        }
+        else{
+            *out_size_of_activation_log = activation_entry_counter;
+        }
+    }
 
     return true;
 }
@@ -133,8 +119,7 @@ bool Monitor_ClearInterfaceActivationLog()
         return false;
     }
 
-    latest_activation_entry_index = 0;
-    size_of_activation_log = 0;
+    activation_entry_counter = 0;
 
     return true;
 }
