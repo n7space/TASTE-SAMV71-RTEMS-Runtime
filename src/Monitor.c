@@ -63,7 +63,7 @@ bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface)
     return handle_activation_log_cyclic_buffer(interface, Monitor_EntryType_deactivation);
 }
 
-bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry *activation_log, 
+bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry **activation_log, 
                                             uint32_t *out_latest_activation_entry_index, 
                                             uint32_t *out_size_of_activation_log)
 {
@@ -71,7 +71,7 @@ bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEn
         return false;
     }
 
-    activation_log = activation_log_buffer;
+    *activation_log = activation_log_buffer;
 
     if(activation_entry_counter == 0){
         *out_latest_activation_entry_index = 0;

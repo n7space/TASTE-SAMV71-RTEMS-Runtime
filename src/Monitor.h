@@ -74,16 +74,16 @@ bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface);
 bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface);
 
 /**
- * @brief                                           Provides access to optional interface activation log.
+ * @brief                                            Provides access to optional interface activation log.
  *
- * @param[in] activation_log                        pointer pointing to beginning of cyclic buffer holding 
- *                                                  all activation entries
- * @param[in] out_latest_activation_entry_index     representing latest activation log index
- * @param[in] out_size_of_activation_log            representing size of activation log
+ * @param[out] activation_log                        pointer pointing to beginning of cyclic buffer holding 
+ *                                                   all activation entries
+ * @param[out] out_latest_activation_entry_index     representing latest activation log index
+ * @param[out] out_size_of_activation_log            representing size of activation log
  * 
  * @return                                          Bool indicating whether the query was successful
  */
-bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry *activation_log, 
+bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry **activation_log, 
                                             uint32_t *out_latest_activation_entry_index, 
                                             uint32_t *out_size_of_activation_log);
 
