@@ -144,7 +144,7 @@ bool ThreadsCommon_ProcessRequest(void *request_data, uint32_t request_size,
 	const uint64_t time_after_execution = Hal_GetElapsedTimeInNs();
 
 	threads_info[thread_id].thread_execution_time =
-	    time_before_execution - time_after_execution;
+	    time_after_execution - time_before_execution;
 	update_execution_time_data(
 	    thread_id, threads_info[thread_id].thread_execution_time);
 
