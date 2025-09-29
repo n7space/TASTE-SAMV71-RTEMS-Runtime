@@ -36,7 +36,6 @@ static uint32_t activation_entry_counter = 0;
 static uint32_t benchmarking_ticks = 0;
 static Timestamp_Control uptime_at_last_reset = 0;
 static Timestamp_Control total_usage_time = 0;
-static struct Monitor_InterfaceUsageData usage_data;
 static struct Monitor_CPUUsageData idle_cpu_usage_data;
 
 static bool handle_activation_log_cyclic_buffer(const enum interfaces_enum interface, 
