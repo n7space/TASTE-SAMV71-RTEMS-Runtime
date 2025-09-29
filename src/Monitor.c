@@ -82,7 +82,7 @@ static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
 	    (usage_percent - idle_cpu_usage_data.average_cpu_usage) /
 		(benchmarking_ticks + 1);
 
-    // only first idle thread is need, stop iteration after first step
+    // only first idle thread is needed, stop iteration after first step
     return true;
 }
 
