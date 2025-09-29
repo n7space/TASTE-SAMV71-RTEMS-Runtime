@@ -34,7 +34,8 @@ static volatile bool is_frozen = true;
 static uint32_t activation_entry_counter = 0;
 
 static uint32_t benchmarking_ticks = 0;
-static int uptime_at_last_reset = 0;
+static Timestamp_Control uptime_at_last_reset = 0;
+static Timestamp_Control total_usage_time = 0;
 static struct Monitor_InterfaceUsageData usage_data;
 static struct Monitor_CPUUsageData idle_cpu_usage_data;
 
@@ -58,8 +59,7 @@ static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
     float usage_percent;
 	uint32_t integer_val;
 	uint32_t float_val;
-    int _Timestamp_Subtract
-	Timestamp_Control total_usage_time;
+    Timestamp_Control uptime;
 	const Timestamp_Control used_time =
 	    _Thread_Get_CPU_time_used_after_last_reset(the_thread);
 
@@ -74,8 +74,8 @@ static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
 		idle_cpu_usage_data.minimum_cpu_usage = usage_percent;
 	}
 
-	if (usage_percent < idle_cpu_usage_data.minimum_cpu_usage) {
-		idle_cpu_usage_data.minimum_cpu_usage = usage_percent;
+	if (usage_percent > idle_cpu_usage_data.maximum_cpu_usage) {
+		idle_cpu_usage_data.maximum_cpu_usage = usage_percent;
 	}
 
 	idle_cpu_usage_data.average_cpu_usage =
@@ -91,12 +91,12 @@ bool Monitor_Init()
 {
     _Timestamp_Set_to_zero(&total_usage_time);
     rtems_cpu_usage_reset();
-	_TOD_Get_uptime(uptime_at_last_reset);
+	_TOD_Get_uptime(&uptime_at_last_reset);
 	
     for(int i = 0; i < RUNTIME_THREAD_COUNT; i++){
-        cpu_usage_data.maximum_cpu_usage = FLT_MAX;
-        cpu_usage_data.minimum_cpu_usage = 0.0;
-        cpu_usage_data.average_cpu_usage = 0.0;
+        idle_cpu_usage_data.maximum_cpu_usage = 0.0;
+        idle_cpu_usage_data.minimum_cpu_usage = FLT_MAX;
+        idle_cpu_usage_data.average_cpu_usage = 0.0;
     }
 
     return true;
@@ -108,7 +108,7 @@ bool Monitor_MonitoringTick(void)
     benchmarking_ticks++;
 }
 
-bool Monitor_GetUsageData(const enum interfaces_enum interface, Monitor_InterfaceUsageData *const usage_data)
+bool Monitor_GetUsageData(const enum interfaces_enum interface, struct Monitor_InterfaceUsageData *const usage_data)
 {
     usage_data->interface = interface;
     usage_data->maximum_execution_time = threads_info[interface].max_thread_execution_time;
@@ -117,7 +117,7 @@ bool Monitor_GetUsageData(const enum interfaces_enum interface, Monitor_Interfac
     return true;
 }
 
-bool Monitor_GetIdleCPUUsageData(Monitor_CPUUsageData *const cpu_usage_data)
+bool Monitor_GetIdleCPUUsageData(struct Monitor_CPUUsageData *const cpu_usage_data)
 {
     *cpu_usage_data = idle_cpu_usage_data;
     return true;

@@ -34,7 +34,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "interfaces_info.h"
 
 /**
  * @brief   Struct representing usage and benchmarking data for the given
@@ -99,7 +98,7 @@ bool Monitor_MonitoringTick(void);
  * 
  * @return                      Bool indicating whether the query about usage data was successful
  */
-bool Monitor_GetUsageData(const enum interfaces_enum interface, Monitor_InterfaceUsageData *const usage_data);
+bool Monitor_GetUsageData(const enum interfaces_enum interface, struct Monitor_InterfaceUsageData *const usage_data);
 
 /**
  * @brief                       Returns structure containing information about current CPU usage in idle state (time when CPU was not
@@ -110,7 +109,7 @@ bool Monitor_GetUsageData(const enum interfaces_enum interface, Monitor_Interfac
  * 
  * @return                      Bool indicating whether the query about CPU usage data was successful
  */
-bool Monitor_GetIdleCPUUsageData(Monitor_CPUUsageData *const cpu_usage_data);
+bool Monitor_GetIdleCPUUsageData(struct Monitor_CPUUsageData *const cpu_usage_data);
 
 /**
  * @brief                       Informs the monitor about given interface activation, 
