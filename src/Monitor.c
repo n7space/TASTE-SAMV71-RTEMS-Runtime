@@ -19,6 +19,7 @@
 
 #include <Monitor.h>
 #include <Hal.h>
+#include <rtems/score/cpu.h>
 
 #ifndef RT_EXEC_LOG_SIZE
 #define RT_EXEC_LOG_SIZE 0
@@ -30,6 +31,48 @@ static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
 static struct Monitor_InterfaceActivationEntry activation_log_buffer[RT_EXEC_LOG_SIZE];
 #endif
 
+#define STACK_U32_PATTERN 0xA5A5A5A5
+
+#define CPU_STACK_CHECK_PATTERN_INITIALIZER \
+  { \
+    0xFEEDF00D, 0x0BAD0D06, /* FEED FOOD to  BAD DOG */ \
+    0xDEADF00D, 0x600D0D06  /* DEAD FOOD but GOOD DOG */ \
+  }
+
+#define CPU_STACK_CHECK_PATTERN_INITIALIZER_ARRAY_SIZE 4
+
+// The "magic pattern" used to mark the end of the stack.
+static const uint32_t Stack_check_Sanity_pattern[] =
+  CPU_STACK_CHECK_PATTERN_INITIALIZER;
+
+#define SANITY_PATTERN_SIZE_BYTES sizeof(Stack_check_Sanity_pattern)
+
+// Where the pattern goes in the stack area is dependent upon
+// whether the stack grow to the high or low area of the memory.
+#if (CPU_STACK_GROWS_UP == TRUE)
+  #define Stack_check_Get_pattern( _the_stack ) \
+    ((char *)(_the_stack)->area + \
+         (_the_stack)->size - SANITY_PATTERN_SIZE_BYTES )
+
+  #define Stack_check_Calculate_used( _low, _size, _high_water ) \
+      ((char *)(_high_water) - (char *)(_low))
+
+  #define Stack_check_Usable_stack_start(_the_stack) \
+    ((_the_stack)->area)
+#else
+  #define Stack_check_Get_pattern( _the_stack ) \
+    ((char *)(_the_stack)->area)
+
+  #define Stack_check_Calculate_used( _low, _size, _high_water) \
+      ( ((char *)(_low) + (_size)) - (char *)(_high_water) )
+
+  #define Stack_check_Usable_stack_start(_the_stack) \
+      ((char *)(_the_stack)->area + SANITY_PATTERN_SIZE_BYTES)
+#endif
+
+#define Stack_check_Usable_stack_size(_the_stack) \
+    ((_the_stack)->size - SANITY_PATTERN_SIZE_BYTES)
+
 static volatile bool is_frozen = true;
 static uint32_t activation_entry_counter = 0;
 
@@ -37,6 +80,12 @@ static uint32_t benchmarking_ticks = 0;
 static Timestamp_Control uptime_at_last_reset = 0;
 static Timestamp_Control total_usage_time = 0;
 static struct Monitor_CPUUsageData idle_cpu_usage_data;
+
+struct Monitor_MaxiumumStackUsageData {
+	enum interfaces_enum interface;
+	uint32_t maximum_stack_usage;
+    bool is_found;
+};
 
 static bool handle_activation_log_cyclic_buffer(const enum interfaces_enum interface, 
                                                 const enum Monitor_EntryType entry_type)
@@ -86,6 +135,65 @@ static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
     return true;
 }
 
+static inline void *find_high_water_mark(const void *stack_start, const uint32_t stack_size)
+{
+  const uint32_t *base;
+  const uint32_t *ebase;
+  uint32_t length;
+
+  base = stack_start;
+  length = stack_size / 4;
+
+  #if ( CPU_STACK_GROWS_UP == TRUE )
+     // start at higher memory and find first word that does not match pattern
+
+    base += length - 1;
+    for (ebase = stack_start; base > ebase; base--){
+        if (*base != STACK_U32_PATTERN){
+            return (void *) base;
+        }
+    }
+      
+  #else
+     // start at lower memory and find first word that does not match pattern
+
+    base += CPU_STACK_CHECK_PATTERN_INITIALIZER_ARRAY_SIZE;
+    for (ebase = base + length; base < ebase; base++)
+      if (*base != STACK_U32_PATTERN)
+        return (void *) base;
+  #endif
+
+  return NULL;
+}
+
+static bool thread_stack_usage_visitor(Thread_Control *the_thread, void *arg)
+{
+    struct Monitor_MaxiumumStackUsageData *stack_usage_data = (struct Monitor_MaxiumumStackUsageData *)arg;
+    const uint32_t id = the_thread->Object.id;
+
+    if(threads_info[stack_usage_data->interface].id != id){
+        return false;
+    }
+
+    const Stack_Control *stack = &the_thread->Start.Initial_stack;
+
+    // This is likely to occur if the stack checker is not actually enabled
+    if (stack->area == NULL) {
+        return true;
+    }
+
+    uint32_t stack_size = Stack_check_Usable_stack_size(stack);
+    void *stack_start Stack_check_Usable_stack_start(stack);
+    void *high_water_mark = find_high_water_mark(stack_start, stack_size);
+
+    if(high_water_mark){
+        stack_usage_data->maximum_stack_usage = Stack_check_Calculate_used(stack_start, stack_size, high_water_mark);
+    }
+
+    stack_usage_data->is_found = true;
+    return true;
+}
+
 bool Monitor_Init()
 {
     _Timestamp_Set_to_zero(&total_usage_time);
@@ -120,6 +228,22 @@ bool Monitor_GetIdleCPUUsageData(struct Monitor_CPUUsageData *const cpu_usage_da
 {
     *cpu_usage_data = idle_cpu_usage_data;
     return true;
+}
+
+int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface)
+{
+    struct Monitor_MaxiumumStackUsageData stack_usage;
+    stack_usage.interface = interface;
+    stack_usage.maximum_stack_usage = 0;
+    stack_usage.is_found = false;
+
+    rtems_task_iterate(thread_stack_usage_visitor, &stack_usage);
+
+    if(stack_usage.is_found){
+        return stack_usage.maximum_stack_usage;
+    }
+
+    return -1;
 }
 
 bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface)

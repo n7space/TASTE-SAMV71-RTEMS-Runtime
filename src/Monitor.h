@@ -112,6 +112,15 @@ bool Monitor_GetUsageData(const enum interfaces_enum interface, struct Monitor_I
 bool Monitor_GetIdleCPUUsageData(struct Monitor_CPUUsageData *const cpu_usage_data);
 
 /**
+ * @brief                       Returns maximum stack usage in bytes of a given sporadic/cyclic interface.
+ *
+ * @param[out] interface        represents interface to obtain information about stack usage
+ * 
+ * @return                      represents maximum stack usage in bytes if >= 0, and error otherwise.
+ */
+int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface);
+
+/**
  * @brief                       Informs the monitor about given interface activation, 
  *                              monitor stores timestamp of activation in specific 
  *                              configurable memory location.
