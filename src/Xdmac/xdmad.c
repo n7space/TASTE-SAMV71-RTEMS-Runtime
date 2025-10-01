@@ -156,7 +156,7 @@ XDMAD_Initialize(sXdmad* pXdmad, uint8_t bPollingMode)
 
     assert(pXdmad);
 
-    rtems_semaphore_obtain(xdmad_lock, RTEMS_WAIT, RTEMS_NO_WAIT); // TODO add time limit
+    rtems_semaphore_obtain(xdmad_lock, RTEMS_WAIT, RTEMS_NO_TIMEOUT); // TODO add time limit
     if(xDmad_Initialized) {
         rtems_semaphore_release(xdmad_lock);
         return;
@@ -198,7 +198,7 @@ XDMAD_AllocateChannel(sXdmad* pXdmad, uint8_t bSrcID, uint8_t bDstID)
     uint32_t volatile timer = 0x7FF;
     assert(xdmad_lock);
 
-    rtems_semaphore_obtain(xdmad_lock, RTEMS_WAIT, RTEMS_NO_WAIT); // TODO timer
+    rtems_semaphore_obtain(xdmad_lock, RTEMS_WAIT, RTEMS_NO_TIMEOUT); // TODO timer
     dwChannel = XDMAD_AllocateXdmacChannel(pXdmad, bSrcID, bDstID);
     rtems_semaphore_release(xdmad_lock);
 
