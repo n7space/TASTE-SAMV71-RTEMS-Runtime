@@ -70,6 +70,19 @@ rtems_name generate_new_hal_semaphore_name()
 	return name++;
 }
 
+inline static void
+Init_setup_xdmad_lock()
+{
+  	const rtems_status_code status_code = rtems_semaphore_create(
+	    generate_new_hal_semaphore_name(),
+	    1, // Initial value, unlocked
+	    RTEMS_BINARY_SEMAPHORE,
+	    0, // Priority ceiling
+																 &xdmad_lock);
+	assert(status_code == RTEMS_SUCCESSFUL);
+}
+
+
 void timer_irq_handler()
 {
 	__atomic_fetch_add(&reloads_counter, 1u, __ATOMIC_SEQ_CST);
@@ -228,6 +241,8 @@ bool Hal_Init(void)
 
     Tic_enableChannel(&tic, Tic_Channel_0);
     Tic_triggerChannel(&tic, Tic_Channel_0);
+
+	Init_setup_xdmad_lock();
 
 	return true;
 }
@@ -656,7 +671,7 @@ Hal_uart_init(Hal_Uart* const halUart, Hal_Uart_Config halUartConfig)
                            .parity = halUartConfig.parity,
                            .baudRate = halUartConfig.baudrate,
                            .baudRateClkSrc = Uart_BaudRateClk_PeripheralCk,
-                           .baudRateClkFreq = DEFAULT_PERIPH_CLOCK /* SystemConfig_DefaultPeriphClock TODO */ };
+                           .baudRateClkFreq = DEFAULT_PERIPH_CLOCK };
     Uart_setConfig(&halUart->uart, &config);
 
     Hal_uart_init_dma();

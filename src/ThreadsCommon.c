@@ -30,7 +30,7 @@
 #define RT_MAX_CYCLIC_INTERFACES RUNTIME_THREAD_COUNT
 #endif
 
-#define NANOSECOND_IN_MILISECOND 1000000
+#define NANOSECOND_IN_MILISECOND 1000000ULL
 
 extern rtems_name generate_new_partition_timer_name();
 static void schedule_next_tick(const uint32_t cyclic_request_data_index);
