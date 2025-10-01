@@ -31,6 +31,7 @@ static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
 static struct Monitor_InterfaceActivationEntry activation_log_buffer[RT_EXEC_LOG_SIZE];
 #endif
 
+#define STACK_BYTE_PATTERN 0xA5
 #define STACK_U32_PATTERN 0xA5A5A5A5
 
 #define CPU_STACK_CHECK_PATTERN_INITIALIZER \
@@ -42,35 +43,39 @@ static struct Monitor_InterfaceActivationEntry activation_log_buffer[RT_EXEC_LOG
 #define CPU_STACK_CHECK_PATTERN_INITIALIZER_ARRAY_SIZE 4
 
 // The "magic pattern" used to mark the end of the stack.
-static const uint32_t Stack_check_Sanity_pattern[] =
+static const uint32_t sanity_pattern[] =
   CPU_STACK_CHECK_PATTERN_INITIALIZER;
 
-#define SANITY_PATTERN_SIZE_BYTES sizeof(Stack_check_Sanity_pattern)
+#define SANITY_PATTERN_SIZE_BYTES sizeof(sanity_pattern)
 
 // Where the pattern goes in the stack area is dependent upon
 // whether the stack grow to the high or low area of the memory.
 #if (CPU_STACK_GROWS_UP == TRUE)
-  #define Stack_check_Get_pattern( _the_stack ) \
-    ((char *)(_the_stack)->area + \
+
+  #define GET_STACK_PATTERN(_the_stack) \
+    ((uint8_t *)(_the_stack)->area + \
          (_the_stack)->size - SANITY_PATTERN_SIZE_BYTES )
 
-  #define Stack_check_Calculate_used( _low, _size, _high_water ) \
-      ((char *)(_high_water) - (char *)(_low))
+  #define CALCAULATE_USED_STACK(_low, _size, _high_water) \
+      ((uint8_t *)(_high_water) - (uint8_t *)(_low))
 
-  #define Stack_check_Usable_stack_start(_the_stack) \
+  #define GET_STACK_START(_the_stack) \
     ((_the_stack)->area)
+
 #else
-  #define Stack_check_Get_pattern( _the_stack ) \
-    ((char *)(_the_stack)->area)
 
-  #define Stack_check_Calculate_used( _low, _size, _high_water) \
-      ( ((char *)(_low) + (_size)) - (char *)(_high_water) )
+  #define GET_STACK_PATTERN(_the_stack) \
+    ((uint8_t *)(_the_stack)->area)
 
-  #define Stack_check_Usable_stack_start(_the_stack) \
-      ((char *)(_the_stack)->area + SANITY_PATTERN_SIZE_BYTES)
+  #define CALCAULATE_USED_STACK(_low, _size, _high_water) \
+      ( ((uint8_t *)(_low) + (_size)) - (uint8_t *)(_high_water) )
+
+  #define GET_STACK_START(_the_stack) \
+      ((uint8_t *)(_the_stack)->area + SANITY_PATTERN_SIZE_BYTES)
+
 #endif
 
-#define Stack_check_Usable_stack_size(_the_stack) \
+#define GET_STACK_SIZE(_the_stack) \
     ((_the_stack)->size - SANITY_PATTERN_SIZE_BYTES)
 
 static volatile bool is_frozen = true;
@@ -182,16 +187,56 @@ static bool thread_stack_usage_visitor(Thread_Control *the_thread, void *arg)
         return true;
     }
 
-    uint32_t stack_size = Stack_check_Usable_stack_size(stack);
-    void *stack_start Stack_check_Usable_stack_start(stack);
+    uint32_t stack_size = GET_STACK_SIZE(stack);
+    void *stack_start = GET_STACK_START(stack);
     void *high_water_mark = find_high_water_mark(stack_start, stack_size);
 
     if(high_water_mark){
-        stack_usage_data->maximum_stack_usage = Stack_check_Calculate_used(stack_start, stack_size, high_water_mark);
+        stack_usage_data->maximum_stack_usage = CALCAULATE_USED_STACK(stack_start, stack_size, high_water_mark);
     }
 
     stack_usage_data->is_found = true;
     return true;
+}
+
+static inline void dope_stack(Stack_Control *stack)
+{
+  memset(
+    GET_STACK_START(stack),
+    STACK_BYTE_PATTERN,
+    GET_STACK_SIZE(stack)
+  );
+}
+
+static inline void add_stack_sanity_pattern(Stack_Control *stack)
+{
+  memcpy(
+    GET_STACK_PATTERN( stack ),
+    sanity_pattern,
+    SANITY_PATTERN_SIZE_BYTES
+  );
+}
+
+static bool thread_dope_stack_visitor(Thread_Control *the_thread, void *arg)
+{
+    //dope_stack(&the_thread->Start.Initial_stack);
+    //add_stack_sanity_pattern(&the_thread->Start.Initial_stack);
+
+    Stack_Control *stack = &the_thread->Start.Initial_stack;
+
+    memset(
+        GET_STACK_START(stack),
+        STACK_BYTE_PATTERN,
+        GET_STACK_SIZE(stack)
+    );
+
+    memcpy(
+        GET_STACK_PATTERN( stack ),
+        sanity_pattern,
+        SANITY_PATTERN_SIZE_BYTES
+    );
+
+    return false;
 }
 
 bool Monitor_Init()
@@ -205,6 +250,8 @@ bool Monitor_Init()
         idle_cpu_usage_data.minimum_cpu_usage = FLT_MAX;
         idle_cpu_usage_data.average_cpu_usage = 0.0;
     }
+
+    rtems_task_iterate(thread_dope_stack_visitor, NULL);
 
     return true;
 }
