@@ -31,6 +31,8 @@
 #include <Uart/Uart.h>
 #include <Nvic/Nvic.h>
 #include <Pio/Pio.h>
+#include <Wdt/Wdt.h>
+#include <Scb/Scb.h>
 #include <Utils/ErrorCode.h>
 #include "Xdmac/xdmad.h"
 #include "UsartRegisters.h"
@@ -69,6 +71,109 @@ rtems_name generate_new_hal_semaphore_name()
 	static rtems_name name = rtems_build_name('H', 0, 0, 0);
 	return name++;
 }
+
+inline static void
+Init_setup_watchdog(void)
+{
+    const Wdt_Config wdtConfig = {
+        .counterValue = 0x0FFF,
+        .deltaValue = 0x0FFF,
+        .isResetEnabled = false,
+        .isFaultInterruptEnabled = false,
+        .isDisabled = true,
+        .isHaltedOnIdle = false,
+        .isHaltedOnDebug = false,
+    };
+
+    Wdt wdt;
+    Wdt_init(&wdt);
+    Wdt_setConfig(&wdt, &wdtConfig);
+}
+
+
+#define USART_BAUD_RATE 115200
+
+
+static volatile InterruptCallback* interruptSubscription[Nvic_InterruptCount] = { NULL };
+
+static Uart* uart0handle;
+static Uart* uart1handle;
+static Uart* uart2handle;
+static Uart* uart3handle;
+static Uart* uart4handle;
+
+/**
+ * @brief UART priotity definition
+ * System interrupts priorities levels must be smaller than
+ * kernel interrupts levels. The lower the priority value the
+ * higher the priority is. Thus, the UART interrupt priority value
+ * must be equal or greater then configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY.
+ */
+#define UART_INTERRUPT_PRIORITY RTEMS_MAXIMUM_PRIORITY
+#define UART_XDMAC_INTERRUPT_PRIORITY UART_INTERRUPT_PRIORITY
+
+#define XDMAD_NO_POLLING 0
+
+#define UART_ID_UART0 "UART0: "
+#define UART_ID_UART1 "UART1: "
+#define UART_ID_UART2 "UART2: "
+#define UART_ID_UART3 "UART3: "
+#define UART_ID_UART4 "UART4: "
+
+#define UART_XDMAD_ERROR_NO_AVALIABLE_CHANNELS "Hal:Hal_uartWrite: The xdmac channels are not avaliable.\n\r"
+
+#define UART_READ_ERROR_OVERRUN_ERROR "Hal:Hal_uartRead: Overrun error.\n\r"
+#define UART_READ_ERROR_FRAME_ERROR "Hal:Hal_uartRead: Frame error.\n\r"
+#define UART_READ_ERROR_PARITY_ERROR "Hal:Hal_uartRead: Parity error.\n\r"
+
+#define UART_RX_INTERRUPT_ERROR_FIFO_FULL "Hal:Hal_interruptHandler: FIFO is full.\n\r"
+
+void
+UART0_Handler(void)
+{
+    if(interruptSubscription[Nvic_Irq_Uart0] != NULL)
+        interruptSubscription[Nvic_Irq_Uart0](NULL);
+    else if(uart0handle != NULL)
+        Uart_handleInterrupt(uart0handle);
+}
+
+void
+UART1_Handler(void)
+{
+    if(interruptSubscription[Nvic_Irq_Uart1] != NULL)
+        interruptSubscription[Nvic_Irq_Uart1](NULL);
+    else if(uart1handle != NULL)
+        Uart_handleInterrupt(uart1handle);
+}
+
+void
+UART2_Handler(void)
+{
+    if(interruptSubscription[Nvic_Irq_Uart2] != NULL)
+        interruptSubscription[Nvic_Irq_Uart2](NULL);
+    else if(uart2handle != NULL)
+        Uart_handleInterrupt(uart2handle);
+}
+
+void
+UART3_Handler(void)
+{
+    if(interruptSubscription[Nvic_Irq_Uart3] != NULL)
+        interruptSubscription[Nvic_Irq_Uart3](NULL);
+    else if(uart3handle != NULL)
+        Uart_handleInterrupt(uart3handle);
+}
+
+void
+UART4_Handler(void)
+{
+    if(interruptSubscription[Nvic_Irq_Uart4] != NULL)
+        interruptSubscription[Nvic_Irq_Uart4](NULL);
+    else if(uart4handle != NULL)
+        Uart_handleInterrupt(uart4handle);
+}
+
+
 
 inline static void
 Init_setup_xdmad_lock()
@@ -218,10 +323,27 @@ void extract_mck_frequency()
 	}
 }
 
+static sXdmad xdmad;
+
+
+void
+XDMAC_Handler(void)
+{
+    XDMAD_Handler(&xdmad);
+}
+
 bool Hal_Init(void)
 {
-	reloads_counter = 0u;
+    reloads_counter = 0u;
 
+    rtems_interrupt_handler_install(58, "xdmac", RTEMS_INTERRUPT_UNIQUE,XDMAC_Handler,0);
+    rtems_interrupt_handler_install(7, "uart0", RTEMS_INTERRUPT_UNIQUE,UART0_Handler,0);
+    rtems_interrupt_handler_install(8, "uart1", RTEMS_INTERRUPT_UNIQUE,UART1_Handler,0);
+    rtems_interrupt_handler_install(44, "uart2", RTEMS_INTERRUPT_UNIQUE,UART2_Handler,0);
+    rtems_interrupt_handler_install(45, "uart3", RTEMS_INTERRUPT_UNIQUE,UART3_Handler,0);
+    rtems_interrupt_handler_install(46, "uart4", RTEMS_INTERRUPT_UNIQUE,UART4_Handler,0);
+
+	Init_setup_watchdog();
   	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
   	Pmc_enablePeripheralClk(&pmc, Pmc_PeripheralId_Tc0Ch0);
 
@@ -302,95 +424,6 @@ bool Hal_SemaphoreObtain(int32_t id)
 bool Hal_SemaphoreRelease(int32_t id)
 {
 	return rtems_semaphore_release(id) == RTEMS_SUCCESSFUL;
-}
-
-#define USART_BAUD_RATE 115200
-
-static sXdmad xdmad;
-
-static volatile InterruptCallback* interruptSubscription[Nvic_InterruptCount] = { NULL };
-
-static Uart* uart0handle;
-static Uart* uart1handle;
-static Uart* uart2handle;
-static Uart* uart3handle;
-static Uart* uart4handle;
-
-/**
- * @brief UART priotity definition
- * System interrupts priorities levels must be smaller than
- * kernel interrupts levels. The lower the priority value the
- * higher the priority is. Thus, the UART interrupt priority value
- * must be equal or greater then configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY.
- */
-#define UART_INTERRUPT_PRIORITY RTEMS_MAXIMUM_PRIORITY
-#define UART_XDMAC_INTERRUPT_PRIORITY UART_INTERRUPT_PRIORITY
-
-#define XDMAD_NO_POLLING 0
-
-#define UART_ID_UART0 "UART0: "
-#define UART_ID_UART1 "UART1: "
-#define UART_ID_UART2 "UART2: "
-#define UART_ID_UART3 "UART3: "
-#define UART_ID_UART4 "UART4: "
-
-#define UART_XDMAD_ERROR_NO_AVALIABLE_CHANNELS "Hal:Hal_uartWrite: The xdmac channels are not avaliable.\n\r"
-
-#define UART_READ_ERROR_OVERRUN_ERROR "Hal:Hal_uartRead: Overrun error.\n\r"
-#define UART_READ_ERROR_FRAME_ERROR "Hal:Hal_uartRead: Frame error.\n\r"
-#define UART_READ_ERROR_PARITY_ERROR "Hal:Hal_uartRead: Parity error.\n\r"
-
-#define UART_RX_INTERRUPT_ERROR_FIFO_FULL "Hal:Hal_interruptHandler: FIFO is full.\n\r"
-
-void
-XDMAC_Handler(void)
-{
-    XDMAD_Handler(&xdmad);
-}
-
-void
-UART0_Handler(void)
-{
-    if(interruptSubscription[Nvic_Irq_Uart0] != NULL)
-        interruptSubscription[Nvic_Irq_Uart0](NULL);
-    else if(uart0handle != NULL)
-        Uart_handleInterrupt(uart0handle);
-}
-
-void
-UART1_Handler(void)
-{
-    if(interruptSubscription[Nvic_Irq_Uart1] != NULL)
-        interruptSubscription[Nvic_Irq_Uart1](NULL);
-    else if(uart1handle != NULL)
-        Uart_handleInterrupt(uart1handle);
-}
-
-void
-UART2_Handler(void)
-{
-    if(interruptSubscription[Nvic_Irq_Uart2] != NULL)
-        interruptSubscription[Nvic_Irq_Uart2](NULL);
-    else if(uart2handle != NULL)
-        Uart_handleInterrupt(uart2handle);
-}
-
-void
-UART3_Handler(void)
-{
-    if(interruptSubscription[Nvic_Irq_Uart3] != NULL)
-        interruptSubscription[Nvic_Irq_Uart3](NULL);
-    else if(uart3handle != NULL)
-        Uart_handleInterrupt(uart3handle);
-}
-
-void
-UART4_Handler(void)
-{
-    if(interruptSubscription[Nvic_Irq_Uart4] != NULL)
-        interruptSubscription[Nvic_Irq_Uart4](NULL);
-    else if(uart4handle != NULL)
-        Uart_handleInterrupt(uart4handle);
 }
 
 void
@@ -684,7 +717,8 @@ Hal_uart_write_init_xdmac_channel(Hal_Uart* const halUart,
                                   const Uart_TxHandler* const txHandler,
                                   uint32_t channelNumber)
 {
-    XDMAD_PrepareChannel(&xdmad, channelNumber);
+  eXdmadRC prepareResult = XDMAD_PrepareChannel(&xdmad, channelNumber);
+  assert(prepareResult == XDMAD_OK);
 
     //< Get Uart Tx peripheral xdmac id
     uint32_t periphID = xdmad.XdmaChannels[channelNumber].bDstTxIfID << XDMAC_CC_PERID_Pos;
@@ -703,9 +737,11 @@ Hal_uart_write_init_xdmac_channel(Hal_Uart* const halUart,
         .mbr_dus = 0,
     };
 
-    XDMAD_ConfigureTransfer(
-            &xdmad, channelNumber, &config, 0, 0, XDMAC_CIE_BIE | XDMAC_CIE_RBIE | XDMAC_CIE_WBIE | XDMAC_CIE_ROIE);
-    XDMAD_SetCallback(&xdmad, channelNumber, Hal_uart_xdmad_handler, (void*)txHandler);
+    eXdmadRC configureResult = XDMAD_ConfigureTransfer(
+													   &xdmad, channelNumber, &config, 0, 0, XDMAC_CIE_BIE | XDMAC_CIE_RBIE | XDMAC_CIE_WBIE | XDMAC_CIE_ROIE);
+	assert(configureResult == XDMAD_OK);
+    eXdmadRC callbackResult = XDMAD_SetCallback(&xdmad, channelNumber, Hal_uart_xdmad_handler, (void*)txHandler);
+	assert(callbackResult == XDMAD_OK);
 }
 
 void
@@ -718,7 +754,8 @@ Hal_uart_write(Hal_Uart* const halUart,
             XDMAD_AllocateChannel(&xdmad, XDMAD_TRANSFER_MEMORY, Hal_get_periph_uart_id(halUart->uart.id));
     if(channelNumber < (xdmad.pXdmacs->XDMAC_GTYPE & XDMAC_GTYPE_NB_CH_Msk)) {
         Hal_uart_write_init_xdmac_channel(halUart, buffer, length, txHandler, channelNumber);
-        XDMAD_StartTransfer(&xdmad, channelNumber);
+        eXdmadRC startResult = XDMAD_StartTransfer(&xdmad, channelNumber);
+		assert(startResult == XDMAD_OK);
     } else {
         Hal_console_usart_write((uint8_t*)UART_XDMAD_ERROR_NO_AVALIABLE_CHANNELS,
                                 strlen(UART_XDMAD_ERROR_NO_AVALIABLE_CHANNELS));

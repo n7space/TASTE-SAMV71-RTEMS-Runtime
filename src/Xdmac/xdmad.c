@@ -353,9 +353,9 @@ XDMAD_Handler(sXdmad* pDmad)
                     pCh->state = XDMAD_STATE_DONE;
                     bExec = 1;
                 }
-                Scb_DisableDCache();
+                Scb_disableDCache();
             } else {
-                Scb_DisableDCache();
+                Scb_disableDCache();
                 /* Block end interrupt for LLI dma mode */
                 if(XDMAC_GetChannelIsr(pXdmac, _iChannel) & XDMAC_CIS_BIS) {
                     /* Execute callback */
@@ -385,7 +385,7 @@ XDMAD_IsTransferDone(sXdmad* pXdmad, uint32_t dwChannel)
     if(iChannel >= pXdmad->numChannels)
         return XDMAD_ERROR;
 
-    Scb_DisableDCache();
+    Scb_disableDCache();
     state = pXdmad->XdmaChannels[iChannel].state;
     if(state == XDMAD_STATE_ALLOCATED)
         return XDMAD_OK;
