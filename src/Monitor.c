@@ -32,21 +32,7 @@ static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
 static struct Monitor_InterfaceActivationEntry activation_log_buffer[RT_EXEC_LOG_SIZE];
 #endif
 
-#define STACK_BYTE_PATTERN 0xA5
-
-// Where the pattern goes in the stack area is dependent upon
-// whether the stack grow to the high or low area of the memory.
-#if (CPU_STACK_GROWS_UP == TRUE)
-
-  #define CALCAULATE_USED_STACK(_low, _size, _high_water) \
-      ((uint8_t *)(_high_water) - (uint8_t *)(_low))
-
-#else
-
-  #define CALCAULATE_USED_STACK(_low, _size, _high_water) \
-      ( ((uint8_t *)(_low) + (_size)) - (uint8_t *)(_high_water) )
-
-#endif
+#define STACK_BYTE_PATTERN (uint32_t)0xA5A5A5A5
 
 static volatile bool is_frozen = true;
 static uint32_t activation_entry_counter = 0;
@@ -56,7 +42,7 @@ static Timestamp_Control uptime_at_last_reset = 0;
 static Timestamp_Control total_usage_time = 0;
 static struct Monitor_CPUUsageData idle_cpu_usage_data;
 
-struct Monitor_MaxiumumStackUsageData {
+struct Monitor_MaximumStackUsageData {
 	enum interfaces_enum interface;
 	uint32_t maximum_stack_usage;
     bool is_found;
@@ -114,7 +100,7 @@ static inline void *find_high_water_mark(const void *stack_start, const uint32_t
 {
 #if ( CPU_STACK_GROWS_UP == TRUE )
 
-    for(uint8_t *pointer = (uint8_t *)(stack_start + stack_size); pointer < (uint8_t *)stack_start + stack_size; pointer++){
+    for(uint32_t *pointer = (uint32_t *)(stack_start + stack_size); pointer > (uint32_t *)stack_start; pointer = pointer - sizeof(uint32_t)){
         if(*pointer != STACK_BYTE_PATTERN){
             return pointer;
         }
@@ -122,7 +108,7 @@ static inline void *find_high_water_mark(const void *stack_start, const uint32_t
       
 #else
 
-    for(uint8_t *pointer = (uint8_t *)stack_start; pointer < (uint8_t *)stack_start + stack_size; pointer++){
+    for(uint32_t *pointer = (uint32_t *)stack_start; pointer < (uint32_t *)stack_start + stack_size; pointer = pointer + sizeof(uint32_t)){
         if(*pointer != STACK_BYTE_PATTERN){
             return pointer;
         }
@@ -133,9 +119,20 @@ static inline void *find_high_water_mark(const void *stack_start, const uint32_t
   return NULL;
 }
 
+// Where the pattern goes in the stack area is dependent upon
+// whether the stack grow to the high or low area of the memory.
+static inline uint32_t calculate_used_stack(void *stack_start, uint32_t stack_size, void *high_water_mark)
+{
+#if (CPU_STACK_GROWS_UP == TRUE)
+    return (uint8_t *)(high_water_mark) - (uint8_t *)(stack_start);
+#else
+    return ((uint8_t *)(stack_start) + (stack_size)) - (uint8_t *)(high_water_mark);
+#endif
+}
+
 static bool thread_stack_usage_visitor(Thread_Control *the_thread, void *arg)
 {
-    struct Monitor_MaxiumumStackUsageData *stack_usage_data = (struct Monitor_MaxiumumStackUsageData *)arg;
+    struct Monitor_MaximumStackUsageData *stack_usage_data = (struct Monitor_MaximumStackUsageData *)arg;
     const uint32_t id = the_thread->Object.id;
 
     if(threads_info[stack_usage_data->interface].id != id){
@@ -154,7 +151,8 @@ static bool thread_stack_usage_visitor(Thread_Control *the_thread, void *arg)
     void *high_water_mark = find_high_water_mark(stack_start, stack_size);
 
     if(high_water_mark){
-        stack_usage_data->maximum_stack_usage = CALCAULATE_USED_STACK(stack_start, stack_size, high_water_mark);
+        stack_usage_data->maximum_stack_usage = 
+            calculate_used_stack(stack_start, stack_size, high_water_mark);
     }
 
     stack_usage_data->is_found = true;
@@ -199,11 +197,11 @@ bool Monitor_GetIdleCPUUsageData(struct Monitor_CPUUsageData *const cpu_usage_da
 
 int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface)
 {
-    #ifndef RT_CONFIGURE_STACK_CHECKER
+#ifndef RT_MEASURE_STACK
     return -1;
-    #endif
+#endif
 
-    struct Monitor_MaxiumumStackUsageData stack_usage;
+    struct Monitor_MaximumStackUsageData stack_usage;
     stack_usage.interface = interface;
     stack_usage.maximum_stack_usage = 0;
     stack_usage.is_found = false;
