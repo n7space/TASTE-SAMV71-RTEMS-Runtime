@@ -20,6 +20,7 @@
 #include "Hal.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include <Nvic/Nvic.h>
 #include <Pmc/Pmc.h>
@@ -87,9 +88,7 @@ inline static void Init_setup_watchdog(void)
 
 #define USART_BAUD_RATE 115200
 
-static volatile InterruptCallback *interruptSubscription[Nvic_InterruptCount] = {
-	NULL
-};
+static InterruptCallback *interruptSubscription[Nvic_InterruptCount] = { NULL };
 
 static Uart *uart0handle;
 static Uart *uart1handle;
@@ -306,21 +305,27 @@ bool Hal_Init(void)
 	reloads_counter = 0u;
 
 	rtems_interrupt_handler_install(58, "xdmac", RTEMS_INTERRUPT_UNIQUE,
-					XDMAC_Handler, 0);
+					(rtems_interrupt_handler)&XDMAC_Handler,
+					0);
 	rtems_interrupt_handler_install(7, "uart0", RTEMS_INTERRUPT_UNIQUE,
-					UART0_Handler, 0);
+					(rtems_interrupt_handler)&UART0_Handler,
+					0);
 	rtems_interrupt_vector_enable(7);
 	rtems_interrupt_handler_install(8, "uart1", RTEMS_INTERRUPT_UNIQUE,
-					UART1_Handler, 0);
+					(rtems_interrupt_handler)&UART1_Handler,
+					0);
 	rtems_interrupt_vector_enable(8);
 	rtems_interrupt_handler_install(44, "uart2", RTEMS_INTERRUPT_UNIQUE,
-					UART2_Handler, 0);
+					(rtems_interrupt_handler)&UART2_Handler,
+					0);
 	rtems_interrupt_vector_enable(44);
 	rtems_interrupt_handler_install(45, "uart3", RTEMS_INTERRUPT_UNIQUE,
-					UART3_Handler, 0);
+					(rtems_interrupt_handler)&UART3_Handler,
+					0);
 	rtems_interrupt_vector_enable(45);
 	rtems_interrupt_handler_install(46, "uart4", RTEMS_INTERRUPT_UNIQUE,
-					UART4_Handler, 0);
+					(rtems_interrupt_handler)&UART4_Handler,
+					0);
 	rtems_interrupt_vector_enable(46);
 	rtems_interrupt_handler_install(23, "timer0", RTEMS_INTERRUPT_UNIQUE,
 					timer_irq_handler, 0);
