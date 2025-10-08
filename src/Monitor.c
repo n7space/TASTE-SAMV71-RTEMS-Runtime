@@ -100,7 +100,7 @@ static inline void *find_high_water_mark(const void *stack_start, const uint32_t
 {
 #if ( CPU_STACK_GROWS_UP == TRUE )
 
-    for(uint32_t *pointer = (uint32_t *)(stack_start + stack_size); pointer > (uint32_t *)stack_start; pointer = pointer - sizeof(uint32_t)){
+    for(uintptr_t *pointer = (uintptr_t *)(stack_start + stack_size); pointer > (uintptr_t *)stack_start; pointer++){
         if(*pointer != STACK_BYTE_PATTERN){
             return pointer;
         }
@@ -108,7 +108,7 @@ static inline void *find_high_water_mark(const void *stack_start, const uint32_t
       
 #else
 
-    for(uint32_t *pointer = (uint32_t *)stack_start; pointer < (uint32_t *)stack_start + stack_size; pointer = pointer + sizeof(uint32_t)){
+    for(uintptr_t *pointer = (uintptr_t *)stack_start; pointer < (uintptr_t *)stack_start + stack_size; pointer++){
         if(*pointer != STACK_BYTE_PATTERN){
             return pointer;
         }
