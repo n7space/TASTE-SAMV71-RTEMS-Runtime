@@ -77,7 +77,7 @@
 /*------------------------------------------------------------------------------
  *         Definitions
  *----------------------------------------------------------------------------*/
-#define XDMAC (Xdmac*)(0x40078000U) /**< \brief (XDMAC ) Base Address */
+#define XDMAC (Xdmac *)(0x40078000U) /**< \brief (XDMAC ) Base Address */
 
 /** \addtogroup dmac_defines DMAC Definitions
  *      @{
@@ -93,15 +93,22 @@
 /*----------------------------------------------------------------------------
  *         Macro
  *----------------------------------------------------------------------------*/
-#define XDMA_GET_DATASIZE(size)                                                                                        \
-    ((size == 0) ? XDMAC_CC_DWIDTH_BYTE : ((size == 1) ? XDMAC_CC_DWIDTH_HALFWORD : (XDMAC_CC_DWIDTH_WORD)))
-#define XDMA_GET_CC_SAM(s)                                                                                             \
-    ((s == 0) ? XDMAC_CC_SAM_FIXED_AM                                                                                  \
-              : ((s == 1) ? XDMAC_CC_SAM_INCREMENTED_AM : ((s == 2) ? XDMAC_CC_SAM_UBS_AM : XDMAC_CC_SAM_UBS_DS_AM)))
-#define XDMA_GET_CC_DAM(d)                                                                                             \
-    ((d == 0) ? XDMAC_CC_DAM_FIXED_AM                                                                                  \
-              : ((d == 1) ? XDMAC_CC_DAM_INCREMENTED_AM : ((d == 2) ? XDMAC_CC_DAM_UBS_AM : XDMAC_CC_DAM_UBS_DS_AM)))
-#define XDMA_GET_CC_MEMSET(m) ((m == 0) ? XDMAC_CC_MEMSET_NORMAL_MODE : XDMAC_CC_MEMSET_HW_MODE)
+#define XDMA_GET_DATASIZE(size)                                  \
+	((size == 0) ? XDMAC_CC_DWIDTH_BYTE :                    \
+		       ((size == 1) ? XDMAC_CC_DWIDTH_HALFWORD : \
+				      (XDMAC_CC_DWIDTH_WORD)))
+#define XDMA_GET_CC_SAM(s)                                        \
+	((s == 0) ? XDMAC_CC_SAM_FIXED_AM :                       \
+		    ((s == 1) ? XDMAC_CC_SAM_INCREMENTED_AM :     \
+				((s == 2) ? XDMAC_CC_SAM_UBS_AM : \
+					    XDMAC_CC_SAM_UBS_DS_AM)))
+#define XDMA_GET_CC_DAM(d)                                        \
+	((d == 0) ? XDMAC_CC_DAM_FIXED_AM :                       \
+		    ((d == 1) ? XDMAC_CC_DAM_INCREMENTED_AM :     \
+				((d == 2) ? XDMAC_CC_DAM_UBS_AM : \
+					    XDMAC_CC_DAM_UBS_DS_AM)))
+#define XDMA_GET_CC_MEMSET(m) \
+	((m == 0) ? XDMAC_CC_MEMSET_NORMAL_MODE : XDMAC_CC_MEMSET_HW_MODE)
 
 /*------------------------------------------------------------------------------
  *         Global functions
@@ -111,47 +118,57 @@
  */
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-    extern uint32_t XDMAC_GetType(Xdmac* pXdmac);
-    extern uint32_t XDMAC_GetConfig(Xdmac* pXdmac);
-    extern uint32_t XDMAC_GetArbiter(Xdmac* pXdmac);
-    extern void XDMAC_EnableGIt(Xdmac* pXdmac, uint8_t dwInteruptMask);
-    extern void XDMAC_DisableGIt(Xdmac* pXdmac, uint8_t dwInteruptMask);
-    extern uint32_t XDMAC_GetGItMask(Xdmac* pXdmac);
-    extern uint32_t XDMAC_GetGIsr(Xdmac* pXdmac);
-    extern uint32_t XDMAC_GetMaskedGIsr(Xdmac* pXdmac);
-    extern void XDMAC_EnableChannel(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_EnableChannels(Xdmac* pXdmac, uint32_t bmChannels);
-    extern void XDMAC_DisableChannel(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_DisableChannels(Xdmac* pXdmac, uint32_t bmChannels);
-    extern uint32_t XDMAC_GetGlobalChStatus(Xdmac* pXdmac);
-    extern void XDMAC_SuspendReadChannel(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_SuspendWriteChannel(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_SuspendReadWriteChannel(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_ResumeReadWriteChannel(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_SoftwareTransferReq(Xdmac* pXdmac, uint8_t channel);
-    extern uint32_t XDMAC_GetSoftwareTransferStatus(Xdmac* pXdmac);
-    extern void XDMAC_SoftwareFlushReq(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_EnableChannelIt(Xdmac* pXdmac, uint8_t channel, uint8_t dwInteruptMask);
-    extern void XDMAC_DisableChannelIt(Xdmac* pXdmac, uint8_t channel, uint8_t dwInteruptMask);
-    extern uint32_t XDMAC_GetChannelItMask(Xdmac* pXdmac, uint8_t channel);
-    extern uint32_t XDMAC_GetChannelIsr(Xdmac* pXdmac, uint8_t channel);
-    extern uint32_t XDMAC_GetMaskChannelIsr(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_SetSourceAddr(Xdmac* pXdmac, uint8_t channel, uint32_t addr);
-    extern void XDMAC_SetDestinationAddr(Xdmac* pXdmac, uint8_t channel, uint32_t addr);
-    extern void XDMAC_SetDescriptorAddr(Xdmac* pXdmac, uint8_t channel, uint32_t addr, uint8_t ndaif);
-    extern void XDMAC_SetDescriptorControl(Xdmac* pXdmac, uint8_t channel, uint8_t config);
-    extern void XDMAC_SetMicroblockControl(Xdmac* pXdmac, uint8_t channel, uint32_t ublen);
-    extern void XDMAC_SetBlockControl(Xdmac* pXdmac, uint8_t channel, uint16_t blen);
-    extern void XDMAC_SetChannelConfig(Xdmac* pXdmac, uint8_t channel, uint32_t config);
-    extern uint32_t XDMAC_GetChannelConfig(Xdmac* pXdmac, uint8_t channel);
-    extern void XDMAC_SetDataStride_MemPattern(Xdmac* pXdmac, uint8_t channel, uint32_t dds_msp);
-    extern void XDMAC_SetSourceMicroBlockStride(Xdmac* pXdmac, uint8_t channel, uint32_t subs);
-    extern void XDMAC_SetDestinationMicroBlockStride(Xdmac* pXdmac, uint8_t channel, uint32_t dubs);
-    extern uint32_t XDMAC_GetChDestinationAddr(Xdmac* pXdmac, uint8_t channel);
+extern uint32_t XDMAC_GetType(Xdmac *pXdmac);
+extern uint32_t XDMAC_GetConfig(Xdmac *pXdmac);
+extern uint32_t XDMAC_GetArbiter(Xdmac *pXdmac);
+extern void XDMAC_EnableGIt(Xdmac *pXdmac, uint8_t dwInteruptMask);
+extern void XDMAC_DisableGIt(Xdmac *pXdmac, uint8_t dwInteruptMask);
+extern uint32_t XDMAC_GetGItMask(Xdmac *pXdmac);
+extern uint32_t XDMAC_GetGIsr(Xdmac *pXdmac);
+extern uint32_t XDMAC_GetMaskedGIsr(Xdmac *pXdmac);
+extern void XDMAC_EnableChannel(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_EnableChannels(Xdmac *pXdmac, uint32_t bmChannels);
+extern void XDMAC_DisableChannel(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_DisableChannels(Xdmac *pXdmac, uint32_t bmChannels);
+extern uint32_t XDMAC_GetGlobalChStatus(Xdmac *pXdmac);
+extern void XDMAC_SuspendReadChannel(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_SuspendWriteChannel(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_SuspendReadWriteChannel(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_ResumeReadWriteChannel(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_SoftwareTransferReq(Xdmac *pXdmac, uint8_t channel);
+extern uint32_t XDMAC_GetSoftwareTransferStatus(Xdmac *pXdmac);
+extern void XDMAC_SoftwareFlushReq(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_EnableChannelIt(Xdmac *pXdmac, uint8_t channel,
+				  uint8_t dwInteruptMask);
+extern void XDMAC_DisableChannelIt(Xdmac *pXdmac, uint8_t channel,
+				   uint8_t dwInteruptMask);
+extern uint32_t XDMAC_GetChannelItMask(Xdmac *pXdmac, uint8_t channel);
+extern uint32_t XDMAC_GetChannelIsr(Xdmac *pXdmac, uint8_t channel);
+extern uint32_t XDMAC_GetMaskChannelIsr(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_SetSourceAddr(Xdmac *pXdmac, uint8_t channel, uint32_t addr);
+extern void XDMAC_SetDestinationAddr(Xdmac *pXdmac, uint8_t channel,
+				     uint32_t addr);
+extern void XDMAC_SetDescriptorAddr(Xdmac *pXdmac, uint8_t channel,
+				    uint32_t addr, uint8_t ndaif);
+extern void XDMAC_SetDescriptorControl(Xdmac *pXdmac, uint8_t channel,
+				       uint8_t config);
+extern void XDMAC_SetMicroblockControl(Xdmac *pXdmac, uint8_t channel,
+				       uint32_t ublen);
+extern void XDMAC_SetBlockControl(Xdmac *pXdmac, uint8_t channel,
+				  uint16_t blen);
+extern void XDMAC_SetChannelConfig(Xdmac *pXdmac, uint8_t channel,
+				   uint32_t config);
+extern uint32_t XDMAC_GetChannelConfig(Xdmac *pXdmac, uint8_t channel);
+extern void XDMAC_SetDataStride_MemPattern(Xdmac *pXdmac, uint8_t channel,
+					   uint32_t dds_msp);
+extern void XDMAC_SetSourceMicroBlockStride(Xdmac *pXdmac, uint8_t channel,
+					    uint32_t subs);
+extern void XDMAC_SetDestinationMicroBlockStride(Xdmac *pXdmac, uint8_t channel,
+						 uint32_t dubs);
+extern uint32_t XDMAC_GetChDestinationAddr(Xdmac *pXdmac, uint8_t channel);
 #ifdef __cplusplus
 }
 #endif

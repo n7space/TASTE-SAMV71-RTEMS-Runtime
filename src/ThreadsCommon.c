@@ -55,13 +55,13 @@ static struct CyclicInterfaceEmptyRequestData empty_request;
 static void schedule_next_tick(const uint32_t cyclic_request_data_index)
 {
 	const rtems_id timer_id =
-	    cyclic_request_data[cyclic_request_data_index].timer_id;
+		cyclic_request_data[cyclic_request_data_index].timer_id;
 
 	cyclic_request_data[cyclic_request_data_index].next_wakeup_ticks +=
-	    cyclic_request_data[cyclic_request_data_index].interval_ticks;
-	rtems_interval delta =
-	    cyclic_request_data[cyclic_request_data_index].next_wakeup_ticks -
-	    rtems_clock_get_ticks_since_boot();
+		cyclic_request_data[cyclic_request_data_index].interval_ticks;
+	rtems_interval delta = cyclic_request_data[cyclic_request_data_index]
+				       .next_wakeup_ticks -
+			       rtems_clock_get_ticks_since_boot();
 	rtems_timer_fire_after(timer_id, delta, timer_callback,
 			       (void *)cyclic_request_data_index);
 }
@@ -80,24 +80,24 @@ static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index)
 static void update_execution_time_data(const uint32_t thread_id,
 				       const uint64_t thread_execution_time)
 {
-
 	if (thread_execution_time <
 	    threads_info[thread_id].min_thread_execution_time) {
 		threads_info[thread_id].min_thread_execution_time =
-		    thread_execution_time;
+			thread_execution_time;
 	}
 
 	if (thread_execution_time >
 	    threads_info[thread_id].max_thread_execution_time) {
 		threads_info[thread_id].max_thread_execution_time =
-		    thread_execution_time;
+			thread_execution_time;
 	}
 
 	threads_info[thread_id].mean_thread_execution_time =
-	    threads_info[thread_id].mean_thread_execution_time +
-	    ((double)thread_execution_time -
-	     threads_info[thread_id].mean_thread_execution_time) /
-		((double)threads_info[thread_id].execution_time_counter + 1);
+		threads_info[thread_id].mean_thread_execution_time +
+		((double)thread_execution_time -
+		 threads_info[thread_id].mean_thread_execution_time) /
+			((double)threads_info[thread_id].execution_time_counter +
+			 1);
 
 	threads_info[thread_id].execution_time_counter++;
 }
@@ -115,16 +115,17 @@ bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
 
 	rtems_name name = generate_new_partition_timer_name();
 	const rtems_status_code timer_creation_status = rtems_timer_create(
-	    name, &cyclic_request_data[cyclic_requests_count].timer_id);
+		name, &cyclic_request_data[cyclic_requests_count].timer_id);
 	if (timer_creation_status != RTEMS_SUCCESSFUL) {
 		return false;
 	}
 
 	cyclic_request_data[cyclic_requests_count].next_wakeup_ticks =
-	    RTEMS_MILLISECONDS_TO_TICKS(dispatch_offset_ns /
-					NANOSECOND_IN_MILISECOND);
+		RTEMS_MILLISECONDS_TO_TICKS(dispatch_offset_ns /
+					    NANOSECOND_IN_MILISECOND);
 	cyclic_request_data[cyclic_requests_count].interval_ticks =
-	    RTEMS_MILLISECONDS_TO_TICKS(interval_ns / NANOSECOND_IN_MILISECOND);
+		RTEMS_MILLISECONDS_TO_TICKS(interval_ns /
+					    NANOSECOND_IN_MILISECOND);
 	cyclic_request_data[cyclic_requests_count].queue_id = queue_id;
 	cyclic_request_data[cyclic_requests_count].request_size = request_size;
 
@@ -144,9 +145,9 @@ bool ThreadsCommon_ProcessRequest(void *request_data, uint32_t request_size,
 	const uint64_t time_after_execution = Hal_GetElapsedTimeInNs();
 
 	threads_info[thread_id].thread_execution_time =
-	    time_after_execution - time_before_execution;
+		time_before_execution - time_after_execution;
 	update_execution_time_data(
-	    thread_id, threads_info[thread_id].thread_execution_time);
+		thread_id, threads_info[thread_id].thread_execution_time);
 
 	return true;
 }

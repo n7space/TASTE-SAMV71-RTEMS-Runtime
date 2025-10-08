@@ -39,12 +39,11 @@
  *----------------------------------------------------------------------------*/
 
 /** DMA hardware interface */
-typedef struct _XdmaHardwareInterface
-{
-    uint8_t bXdmac;     /**< DMA Controller number */
-    uint32_t bPeriphID; /**< Peripheral ID */
-    uint8_t bTransfer;  /**< Transfer type 0: Tx, 1 :Rx*/
-    uint8_t bIfID;      /**< DMA Interface ID */
+typedef struct _XdmaHardwareInterface {
+	uint8_t bXdmac; /**< DMA Controller number */
+	uint32_t bPeriphID; /**< Peripheral ID */
+	uint8_t bTransfer; /**< Transfer type 0: Tx, 1 :Rx*/
+	uint8_t bIfID; /**< DMA Interface ID */
 } XdmaHardwareInterface;
 
 /*----------------------------------------------------------------------------

@@ -11,10 +11,8 @@ target_sources(Samv71RuntimeXdmad
 target_include_directories(Samv71RuntimeXdmad
     PRIVATE     ${CMAKE_CURRENT_SOURCE_DIR}/..)
 target_link_libraries(Samv71RuntimeXdmad
-    PRIVATE     SAMV71::Startup
-                SAMV71::Pmc
+    PRIVATE     SAMV71::Pmc
                 Samv71Scb
-                SAMV71::FreeRTOS
                 SAMV71::Runtime::Hal)
 
 add_format_target(Samv71RuntimeXdmad)
