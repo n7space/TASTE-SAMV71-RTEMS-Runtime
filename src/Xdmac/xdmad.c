@@ -82,8 +82,11 @@ extern Pmc pmc;
 /*----------------------------------------------------------------------------
  *        Local macros
  *----------------------------------------------------------------------------*/
-#define TRACE_DEBUG(...) Hal_console_usart_write(("-D- " __VA_ARGS__), strlen(("-D- " __VA_ARGS__)))
-#define TRACE_ERROR(...) Hal_console_usart_write(("-E- " __VA_ARGS__), strlen(("-E- " __VA_ARGS__)))
+/* #define TRACE_DEBUG(...) Hal_console_usart_write(("-D- " __VA_ARGS__), strlen(("-D- " __VA_ARGS__))) */
+/* #define TRACE_ERROR(...) Hal_console_usart_write(("-E- " __VA_ARGS__), strlen(("-E- " __VA_ARGS__))) */
+#define TRACE_DEBUG(...)
+#define TRACE_ERROR(...)
+
 
 /*----------------------------------------------------------------------------
  *        Local functions
@@ -302,9 +305,12 @@ XDMAD_PrepareChannel(sXdmad* pXdmad, uint32_t dwChannel)
  * \brief xDMA interrupt handler
  * \param pxDmad Pointer to DMA driver instance.
  */
+int XDMAD_Handler_in = 0;
+int XDMAD_Handler_out = 0;
 void
 XDMAD_Handler(sXdmad* pDmad)
 {
+  ++XDMAD_Handler_in;
     Xdmac* pXdmac;
     sXdmadChannel* pCh;
     uint32_t xdmaChannelIntStatus, xdmaGlobaIntStatus, xdmaGlobalChStatus;
@@ -368,6 +374,7 @@ XDMAD_Handler(sXdmad* pDmad)
             }
         }
     }
+	++XDMAD_Handler_out;
 }
 
 /**

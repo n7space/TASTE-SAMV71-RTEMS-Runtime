@@ -39,10 +39,6 @@
 
 #define DEFAULT_PERIPH_CLOCK 75000000
 
-#ifndef RT_MAX_HAL_SEMAPHORES
-#define RT_MAX_HAL_SEMAPHORES 8
-#endif
-
 #define NANOSECOND_IN_SECOND 1000000000.0
 #define MEGA_HZ 1000000u
 #define TICKS_PER_RELOAD 65535ul
@@ -336,12 +332,18 @@ bool Hal_Init(void)
 {
     reloads_counter = 0u;
 
-    rtems_interrupt_handler_install(58, "xdmac", RTEMS_INTERRUPT_UNIQUE,XDMAC_Handler,0);
-    rtems_interrupt_handler_install(7, "uart0", RTEMS_INTERRUPT_UNIQUE,UART0_Handler,0);
-    rtems_interrupt_handler_install(8, "uart1", RTEMS_INTERRUPT_UNIQUE,UART1_Handler,0);
-    rtems_interrupt_handler_install(44, "uart2", RTEMS_INTERRUPT_UNIQUE,UART2_Handler,0);
-    rtems_interrupt_handler_install(45, "uart3", RTEMS_INTERRUPT_UNIQUE,UART3_Handler,0);
-    rtems_interrupt_handler_install(46, "uart4", RTEMS_INTERRUPT_UNIQUE,UART4_Handler,0);
+    rtems_interrupt_handler_install(58, "xdmac", RTEMS_INTERRUPT_UNIQUE, XDMAC_Handler, 0);
+    rtems_interrupt_handler_install(7, "uart0", RTEMS_INTERRUPT_UNIQUE, UART0_Handler, 0);
+	rtems_interrupt_vector_enable(7);
+    rtems_interrupt_handler_install(8, "uart1", RTEMS_INTERRUPT_UNIQUE, UART1_Handler, 0);
+  rtems_interrupt_vector_enable(8);
+  rtems_interrupt_handler_install(44, "uart2", RTEMS_INTERRUPT_UNIQUE, UART2_Handler, 0);
+  rtems_interrupt_vector_enable(44);
+  rtems_interrupt_handler_install(45, "uart3", RTEMS_INTERRUPT_UNIQUE, UART3_Handler, 0);
+  rtems_interrupt_vector_enable(45);
+  rtems_interrupt_handler_install(46, "uart4", RTEMS_INTERRUPT_UNIQUE, UART4_Handler, 0);
+  rtems_interrupt_vector_enable(46);
+    rtems_interrupt_handler_install(23, "timer0", RTEMS_INTERRUPT_UNIQUE, timer_irq_handler, 0);
 
 	Init_setup_watchdog();
   	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
@@ -349,8 +351,8 @@ bool Hal_Init(void)
 
 	extract_mck_frequency();
 
-  	Nvic_setInterruptHandlerAddress(Nvic_Irq_Timer0_Channel0, timer_irq_handler);
-	Nvic_enableInterrupt(Nvic_Irq_Timer0_Channel0);
+  	/* Nvic_setInterruptHandlerAddress(Nvic_Irq_Timer0_Channel0, timer_irq_handler); */
+	/* Nvic_enableInterrupt(Nvic_Irq_Timer0_Channel0); */
 
 	Tic_init(&tic, Tic_Id_0);
     Tic_writeProtect(&tic, false);
@@ -426,6 +428,7 @@ bool Hal_SemaphoreRelease(int32_t id)
 	return rtems_semaphore_release(id) == RTEMS_SUCCESSFUL;
 }
 
+
 void
 Hal_uart_xdmad_handler(uint32_t xdmacChannel, void* args)
 {
@@ -437,23 +440,23 @@ Hal_uart_xdmad_handler(uint32_t xdmacChannel, void* args)
 static inline void
 Hal_uart_print_uart_id(Uart_Id id)
 {
-    switch(id) {
-        case Uart_Id_0:
-            Hal_console_usart_write(UART_ID_UART0, strlen(UART_ID_UART0));
-            break;
-        case Uart_Id_1:
-            Hal_console_usart_write(UART_ID_UART1, strlen(UART_ID_UART1));
-            break;
-        case Uart_Id_2:
-            Hal_console_usart_write(UART_ID_UART2, strlen(UART_ID_UART2));
-            break;
-        case Uart_Id_3:
-            Hal_console_usart_write(UART_ID_UART3, strlen(UART_ID_UART3));
-            break;
-        case Uart_Id_4:
-            Hal_console_usart_write(UART_ID_UART4, strlen(UART_ID_UART4));
-            break;
-    }
+    /* switch(id) { */
+    /*     case Uart_Id_0: */
+    /*         Hal_console_usart_write(UART_ID_UART0, strlen(UART_ID_UART0)); */
+    /*         break; */
+    /*     case Uart_Id_1: */
+    /*         Hal_console_usart_write(UART_ID_UART1, strlen(UART_ID_UART1)); */
+    /*         break; */
+    /*     case Uart_Id_2: */
+    /*         Hal_console_usart_write(UART_ID_UART2, strlen(UART_ID_UART2)); */
+    /*         break; */
+    /*     case Uart_Id_3: */
+    /*         Hal_console_usart_write(UART_ID_UART3, strlen(UART_ID_UART3)); */
+    /*         break; */
+    /*     case Uart_Id_4: */
+    /*         Hal_console_usart_write(UART_ID_UART4, strlen(UART_ID_UART4)); */
+    /*         break; */
+    /* } */
 }
 
 static inline void
@@ -463,16 +466,16 @@ Hal_uart_error_handler(Uart_ErrorFlags errorFlags, void* arg)
 
     Hal_uart_print_uart_id(halUart->uart.id);
     if(errorFlags.hasOverrunOccurred == true) {
-        Hal_console_usart_write(UART_READ_ERROR_OVERRUN_ERROR, strlen(UART_READ_ERROR_OVERRUN_ERROR));
+        /* Hal_console_usart_write(UART_READ_ERROR_OVERRUN_ERROR, strlen(UART_READ_ERROR_OVERRUN_ERROR)); */
     }
     if(errorFlags.hasFramingErrorOccurred == true) {
-        Hal_console_usart_write(UART_READ_ERROR_FRAME_ERROR, strlen(UART_READ_ERROR_FRAME_ERROR));
+        /* Hal_console_usart_write(UART_READ_ERROR_FRAME_ERROR, strlen(UART_READ_ERROR_FRAME_ERROR)); */
     }
     if(errorFlags.hasParityErrorOccurred == true) {
-        Hal_console_usart_write(UART_READ_ERROR_PARITY_ERROR, strlen(UART_READ_ERROR_PARITY_ERROR));
+        /* Hal_console_usart_write(UART_READ_ERROR_PARITY_ERROR, strlen(UART_READ_ERROR_PARITY_ERROR)); */
     }
     if(errorFlags.hasRxFifoFullErrorOccurred == true) {
-        Hal_console_usart_write(UART_RX_INTERRUPT_ERROR_FIFO_FULL, strlen(UART_RX_INTERRUPT_ERROR_FIFO_FULL));
+        /* Hal_console_usart_write(UART_RX_INTERRUPT_ERROR_FIFO_FULL, strlen(UART_RX_INTERRUPT_ERROR_FIFO_FULL)); */
         assert(false && "Rx FIFO is full.");
     }
 }
@@ -639,7 +642,8 @@ Hal_uart_init_pmc(Uart_Id id)
 inline static void
 Hal_uart_init_nvic(Uart_Id id)
 {
-    Nvic_enableInterrupt(Hal_get_nvic_uart_id(id));
+  Nvic_enableInterrupt(Hal_get_nvic_uart_id(id));
+  // TODO change to rtems API
     Nvic_setInterruptPriority(Hal_get_nvic_uart_id(id), UART_INTERRUPT_PRIORITY);
 }
 
@@ -668,9 +672,10 @@ Hal_uart_init_handle(Uart* uart, Uart_Id id)
 static inline void
 Hal_uart_init_dma(void)
 {
-  Pmc_enablePeripheralClk(&pmc,Pmc_PeripheralId_Xdmac);
+    Pmc_enablePeripheralClk(&pmc,Pmc_PeripheralId_Xdmac);
 
     Nvic_clearInterruptPending(Nvic_Irq_Xdmac);
+    // TODO change to rtems API
     Nvic_setInterruptPriority(Nvic_Irq_Xdmac, UART_XDMAC_INTERRUPT_PRIORITY);
     Nvic_enableInterrupt(Nvic_Irq_Xdmac);
 
@@ -757,8 +762,8 @@ Hal_uart_write(Hal_Uart* const halUart,
         eXdmadRC startResult = XDMAD_StartTransfer(&xdmad, channelNumber);
 		assert(startResult == XDMAD_OK);
     } else {
-        Hal_console_usart_write((uint8_t*)UART_XDMAD_ERROR_NO_AVALIABLE_CHANNELS,
-                                strlen(UART_XDMAD_ERROR_NO_AVALIABLE_CHANNELS));
+        /* Hal_console_usart_write((uint8_t*)UART_XDMAD_ERROR_NO_AVALIABLE_CHANNELS, */
+        /*                         strlen(UART_XDMAD_ERROR_NO_AVALIABLE_CHANNELS)); */
     }
 }
 
@@ -888,12 +893,12 @@ writeByte(const uint8_t data)
     *US_THR = data;
 }
 
-void
-Hal_console_usart_write(const uint8_t* const buffer, const uint16_t count)
-{
-    for(uint32_t i = 0; i < count; i++) {
-        writeByte(buffer[i]);
-    }
+/* void */
+/* Hal_console_usart_write(const uint8_t* const buffer, const uint16_t count) */
+/* { */
+/*     for(uint32_t i = 0; i < count; i++) { */
+/*         writeByte(buffer[i]); */
+/*     } */
 
-    waitForTransmitterReady();
-}
+/*     waitForTransmitterReady(); */
+/* } */

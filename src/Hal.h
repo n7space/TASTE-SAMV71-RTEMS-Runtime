@@ -31,6 +31,10 @@
 #include <Uart/Uart.h>
 #include <Nvic/Nvic.h>
 
+#ifndef RT_MAX_HAL_SEMAPHORES
+#define RT_MAX_HAL_SEMAPHORES 8
+#endif
+
 /// \brief Uart configuration structure
 typedef struct
 {
