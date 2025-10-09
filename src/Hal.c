@@ -29,7 +29,6 @@
 #include <interfaces_info.h>
 #include <rtems.h>
 
-#include "UsartRegisters.h"
 #include "Xdmac/xdmad.h"
 #include <Nvic/Nvic.h>
 #include <Pio/Pio.h>
@@ -85,8 +84,6 @@ inline static void Init_setup_watchdog(void)
 	Wdt_init(&wdt);
 	Wdt_setConfig(&wdt, &wdtConfig);
 }
-
-#define USART_BAUD_RATE 115200
 
 static InterruptCallback *interruptSubscription[Nvic_InterruptCount] = { NULL };
 
@@ -775,137 +772,6 @@ void Hal_uart_read(Hal_Uart *const halUart, uint8_t *const buffer,
 	ByteFifo_init(&halUart->rxFifo, buffer, length);
 	Uart_registerErrorHandler(&halUart->uart, errorHandler);
 	Uart_readAsync(&halUart->uart, &halUart->rxFifo, rxHandler);
-}
-
-static inline void Hal_console_usart_init_pio(void)
-{
-	Pio pioB;
-	ErrorCode errorCode = 0;
-	Pio_init(Pio_Port_B, &pioB, &errorCode);
-
-	Pio_Pin_Config pinConf;
-	pinConf.control = Pio_Control_PeripheralD;
-	pinConf.direction = Pio_Direction_Input;
-	pinConf.pull = Pio_Pull_None;
-	pinConf.filter = Pio_Filter_None;
-	pinConf.isMultiDriveEnabled = false;
-	pinConf.isSchmittTriggerDisabled = false;
-	pinConf.irq = Pio_Irq_None;
-
-	Pio_setPinsConfig(&pioB, PIO_PIN_4, &pinConf, &errorCode);
-}
-
-static inline void Hal_console_usart_init_pmc(void)
-{
-	Pmc_enablePeripheralClk(&pmc, Pmc_PeripheralId_PioB);
-	Pmc_enablePeripheralClk(&pmc, Pmc_PeripheralId_Usart1);
-}
-
-static inline void Hal_console_usart_init_mode(void)
-{
-	// cppcheck-suppress misra2012_11_4
-	uint32_t *US_MR = (uint32_t *)USART1_MR_ADDRESS;
-
-	*US_MR = 0; // Clear
-	*US_MR |= USART_MR_MODE_NORMAL
-		  << USART_MR_MODE_OFFSET; // UART_MODE NORMAL
-	*US_MR |= USART_MR_USCLKS_MCK << USART_MR_USCLKS_OFFSET; // USCLKS PCK
-	*US_MR |= USART_MR_CHRL_8BIT << USART_MR_CHRL_OFFSET; // CHRL 8BIT
-	*US_MR |= USART_MR_SYNC_ASYNCHRONOUS
-		  << USART_MR_SYNC_OFFSET; // SYNC Asynchronous
-	*US_MR |= USART_MR_PAR_NO << UART_MR_PAR_OFFSET; // PAR No parity
-	*US_MR |= USART_MR_NBSTOP_1_BIT
-		  << USART_MR_NBSTOP_OFFSET; // NBSTOP 1 stop bit
-	*US_MR |= USART_MR_CHMODE_NORMAL
-		  << UART_MR_CHMODE_OFFSET; // CHMODE Normal mode
-	*US_MR |= USART_MR_MSBF_LSB << USART_MR_MSBF_OFFSET; // MSBF MSB
-	*US_MR |= USART_MR_MODE9_CHRL
-		  << USART_MR_MODE9_OFFSET; // MODE9 CHRL defines length
-	*US_MR |= USART_MR_CLKO_NO_SCK
-		  << USART_MR_CLKO_OFFSET; // CLKO does not drive SCK pin
-	*US_MR |= USART_MR_OVER_16X
-		  << USART_MR_OVER_OFFSET; // OVER 16x oversampling
-	*US_MR |= USART_MR_INACK_NOT_GEN
-		  << USART_MR_INACK_OFFSET; // INACK NSCK is not generated
-	*US_MR |= USART_MR_DSNACK_NO_NACK
-		  << USART_MR_DSNACK_OFFSET; // DSNACK don't care - no NACK
-	*US_MR |= USART_MR_VAR_SYNC_DISABLE
-		  << USART_MR_VAR_SYNC_OFFSET; // VAR_SYNC MODSYNC defines sync
-	*US_MR |= USART_MR_INVDATA_DISABLED
-		  << USART_MR_INVDATA_OFFSET; // INVDATA do not invert data
-	*US_MR |=
-		USART_MR_MAX_ITERATION_DISABLE
-		<< USART_MR_MAX_ITERATION_OFFSET; // MAX_ITERATION don't care -
-	// valid in ISO7816 protocol
-	*US_MR |=
-		USART_MR_FILTER_DISABLE
-		<< USART_MR_FILTER_OFFSET; // FILTER do not filter incomming data
-	*US_MR |= USART_MR_MAN_DISABLE
-		  << USART_MR_MAN_OFFSET; // MAN manchester coding disabled
-	*US_MR |=
-		USART_MR_MODSYNC_DISABLE
-		<< USART_MR_MODSYNC_OFFSET; // MODSYNC don't care - manchester disabled
-	*US_MR |=
-		USART_MR_ONEBIT_1_BIT
-		<< USART_MR_ONEBIT_OFFSET; // ONEBIT 1 bit start frame delimiterx
-}
-
-static inline void Hal_console_usart_init_baudrate()
-{
-	// cppcheck-suppress misra2012_11_4
-	uint32_t *US_BRGR = (uint32_t *)USART1_BRGR_ADDRESS;
-	// BaudRate = CLK / ((coarseDiv + fineDiv / 8) * 16)
-	uint32_t coarseDiv = DEFAULT_PERIPH_CLOCK / (16u * USART_BAUD_RATE);
-	uint64_t fineDiv = 8uLL * (((uint64_t)DEFAULT_PERIPH_CLOCK * 1000uLL /
-				    (16uLL * USART_BAUD_RATE)) -
-				   (uint64_t)coarseDiv * 1000uLL);
-	fineDiv /= 1000uLL;
-
-	*US_BRGR = coarseDiv |
-		   ((uint32_t)fineDiv << USART_BRGR_FINE_DIV_OFFSET);
-}
-
-static inline void Hal_console_usart_init_bus_matrix()
-{
-	// cppcheck-suppress misra2012_11_4
-	uint32_t *CCFG_SYSIO = (uint32_t *)MATRIX_CCFG_SYSIO_ADDR;
-	// Assign the PB4 pin to the PIO controller (TDI is the default function)
-	*CCFG_SYSIO |= MATRIX_CCFG_SYSIO_PB4_SELECTED
-		       << MATRIX_CCFG_SYSIO_SYSIO4_OFFSET;
-}
-
-static inline void Hal_console_usart_init_tx_enable()
-{
-	// cppcheck-suppress misra2012_11_4
-	uint32_t *US_CR = (uint32_t *)USART1_CR_ADDRESS;
-	*US_CR = USART_CR_TXEN_ENABLE
-		 << UART_CR_TXEN_OFFSET; // Enable the transmitter
-}
-
-void Hal_console_usart_init(void)
-{
-	Hal_console_usart_init_bus_matrix();
-	Hal_console_usart_init_pmc();
-	Hal_console_usart_init_pio();
-
-	Hal_console_usart_init_mode();
-	Hal_console_usart_init_baudrate();
-	Hal_console_usart_init_tx_enable();
-}
-
-static inline void waitForTransmitterReady(void)
-{
-	volatile uint32_t *const US_CSR = (uint32_t *)USART1_CSR_ADDRESS;
-	while (((*US_CSR) & USART_CSR_TXRDY_MASK) == 0)
-		asm volatile("nop");
-}
-
-static inline void writeByte(const uint8_t data)
-{
-	waitForTransmitterReady();
-
-	volatile uint32_t *const US_THR = (uint32_t *)USART1_THR_ADDRESS;
-	*US_THR = data;
 }
 
 /* void */

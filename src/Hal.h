@@ -85,20 +85,6 @@ void Hal_uart_write(Hal_Uart *const halUart, uint8_t *const buffer,
 void Hal_uart_read(Hal_Uart *const halUart, uint8_t *const buffer,
 		   const uint16_t length, const Uart_RxHandler rxHandler);
 
-/// \brief Initializes USART 1, which is connected to virtual com port gateway
-/**
- * Initializes pmc for pio port B and for usart 1
- * Initializes pio PB4 (TXD1)
- * Initializes USART1 Mode Register (MR) - no parity, 1 stop bit
- * Initializes USART1 baudrate 115200
- */
-void Hal_console_usart_init(void);
-
-/// \brief Synchroniously writes bytes over USART1
-/// \param [in] buffer array containing bytes to send
-/// \param [in] count length of array of bytes
-void Hal_console_usart_write(const uint8_t *const buffer, const uint16_t count);
-
 /**
  * @brief               Initializes the Hal module.
  *
