@@ -37,8 +37,6 @@
 #include <Utils/ErrorCode.h>
 #include <Wdt/Wdt.h>
 
-#define DEFAULT_PERIPH_CLOCK 75000000
-
 #define NANOSECOND_IN_SECOND 1000000000.0
 #define MEGA_HZ 1000000u
 #define TICKS_PER_RELOAD 65535ul
@@ -692,7 +690,7 @@ void Hal_uart_init(Hal_Uart *const halUart, Hal_Uart_Config halUartConfig)
 			       .parity = halUartConfig.parity,
 			       .baudRate = halUartConfig.baudrate,
 			       .baudRateClkSrc = Uart_BaudRateClk_PeripheralCk,
-			       .baudRateClkFreq = DEFAULT_PERIPH_CLOCK };
+			       .baudRateClkFreq = mck_frequency };
 	Uart_setConfig(&halUart->uart, &config);
 
 	Hal_uart_init_dma();
