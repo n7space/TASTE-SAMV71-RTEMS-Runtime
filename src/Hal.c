@@ -299,6 +299,8 @@ bool Hal_Init(void)
 {
 	reloads_counter = 0u;
 
+	// nvic cannot be used for registration of interrupt handlers:
+	// instead, the rtems api shall be used
 	rtems_interrupt_handler_install(58, "xdmac", RTEMS_INTERRUPT_UNIQUE,
 					(rtems_interrupt_handler)&XDMAC_Handler,
 					0);
@@ -330,10 +332,6 @@ bool Hal_Init(void)
 	Pmc_enablePeripheralClk(&pmc, Pmc_PeripheralId_Tc0Ch0);
 
 	extract_mck_frequency();
-
-	/* Nvic_setInterruptHandlerAddress(Nvic_Irq_Timer0_Channel0,
-   * timer_irq_handler); */
-	/* Nvic_enableInterrupt(Nvic_Irq_Timer0_Channel0); */
 
 	Tic_init(&tic, Tic_Id_0);
 	Tic_writeProtect(&tic, false);
@@ -771,13 +769,3 @@ void Hal_uart_read(Hal_Uart *const halUart, uint8_t *const buffer,
 	Uart_registerErrorHandler(&halUart->uart, errorHandler);
 	Uart_readAsync(&halUart->uart, &halUart->rxFifo, rxHandler);
 }
-
-/* void */
-/* Hal_console_usart_write(const uint8_t* const buffer, const uint16_t count) */
-/* { */
-/*     for(uint32_t i = 0; i < count; i++) { */
-/*         writeByte(buffer[i]); */
-/*     } */
-
-/*     waitForTransmitterReady(); */
-/* } */
