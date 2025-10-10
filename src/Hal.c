@@ -83,8 +83,6 @@ inline static void Init_setup_watchdog(void)
 	Wdt_setConfig(&wdt, &wdtConfig);
 }
 
-static InterruptCallback *interruptSubscription[Nvic_InterruptCount] = { NULL };
-
 void timer_irq_handler()
 {
 	__atomic_fetch_add(&reloads_counter, 1u, __ATOMIC_SEQ_CST);
