@@ -23,14 +23,14 @@
 
 extern rtems_id broker_Semaphore;
 
-void
-Broker_acquire_lock()
+void Broker_acquire_lock()
 {
-    while (rtems_semaphore_obtain(broker_Semaphore, RTEMS_WAIT, RTEMS_NO_WAIT) != RTEMS_SUCCESSFUL);
+	while (rtems_semaphore_obtain(broker_Semaphore, RTEMS_WAIT,
+				      RTEMS_NO_WAIT) != RTEMS_SUCCESSFUL)
+		;
 }
 
-void
-Broker_release_lock()
+void Broker_release_lock()
 {
-    rtems_semaphore_release(broker_Semaphore);
+	rtems_semaphore_release(broker_Semaphore);
 }

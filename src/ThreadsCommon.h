@@ -38,7 +38,7 @@ struct CyclicInterfaceEmptyRequestData {
 	uint32_t m_sender_pid;
 	uint32_t m_length;
 	uint8_t m_data[EMPTY_REQUEST_DATA_BUFFER_SIZE]
-	    __attribute__((aligned(16)));
+		__attribute__((aligned(16)));
 };
 
 /**
