@@ -114,7 +114,7 @@ bool Monitor_GetIdleCPUUsageData(struct Monitor_CPUUsageData *const cpu_usage_da
 /**
  * @brief                       Returns maximum stack usage in bytes of a given sporadic/cyclic interface.
  *
- * @param[out] interface        represents interface to obtain information about stack usage
+ * @param[in] interface         represents interface to obtain information about stack usage
  * 
  * @return                      represents maximum stack usage in bytes if >= 0, and error otherwise.
  */
