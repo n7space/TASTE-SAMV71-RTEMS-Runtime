@@ -100,7 +100,7 @@ static inline void *find_high_water_mark(const void *stack_start, const uint32_t
 {
 #if ( CPU_STACK_GROWS_UP == TRUE )
 
-    for(uintptr_t pointer = (uintptr_t)(stack_start + stack_size); pointer > (uintptr_t *)stack_start; pointer--){
+    for(uintptr_t pointer = (uintptr_t)stack_start + stack_size; pointer > (uintptr_t)stack_start; pointer -= sizeof(uint32_t)){
         if(*(uint32_t *)pointer != STACK_BYTE_PATTERN){
             return (void *)pointer;
         }
@@ -108,7 +108,7 @@ static inline void *find_high_water_mark(const void *stack_start, const uint32_t
       
 #else
 
-    for(uintptr_t pointer = (uintptr_t )stack_start; pointer < (uintptr_t )(stack_start + stack_size); pointer++){
+    for(uintptr_t pointer = (uintptr_t )stack_start; pointer < (uintptr_t)stack_start + stack_size; pointer += sizeof(uint32_t)){
         if(*(uint32_t *)pointer != STACK_BYTE_PATTERN){
             return (void *)pointer;
         }
@@ -116,7 +116,7 @@ static inline void *find_high_water_mark(const void *stack_start, const uint32_t
 
 #endif
 
-  return NULL;
+   return NULL;
 }
 
 // Where the pattern goes in the stack area is dependent upon
