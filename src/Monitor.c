@@ -48,7 +48,7 @@ struct Monitor_MaximumStackUsageData {
     bool is_found;
 };
 
-static uint32_t maximum_queued_items[RUNTIME_THREAD_COUNT - 1];
+Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
 
 static bool handle_activation_log_cyclic_buffer(const enum interfaces_enum interface, 
                                                 const enum Monitor_EntryType entry_type)
@@ -184,16 +184,6 @@ bool Monitor_MonitoringTick(void)
 {
     // update information about cpu usage
 	rtems_task_iterate(cpu_usage_visitor, NULL);
-
-    // update information about queues usage
-    for(int i = 0; i < RUNTIME_THREAD_COUNT - 1; i++){
-        int32_t count = Monitor_GetQueuedItemsCount(interface_to_queue_map[i]);
-
-        if(count > -1 && count > maximum_queued_items[i]){
-            maximum_queued_items[i] = count;
-        }
-    }
-
     benchmarking_ticks++;
 }
 
