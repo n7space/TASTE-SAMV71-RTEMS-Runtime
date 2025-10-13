@@ -289,7 +289,7 @@ rtems_id Hal_SemaphoreCreate(void)
 	const rtems_status_code status_code = rtems_semaphore_create(
 		generate_new_hal_semaphore_name(),
 		1, // Initial value, unlocked
-		RTEMS_BINARY_SEMAPHORE,
+		RTEMS_SIMPLE_BINARY_SEMAPHORE,
 		0, // Priority ceiling
 		&hal_semaphore_ids[created_semaphores_count]);
 
@@ -309,4 +309,14 @@ bool Hal_SemaphoreObtain(int32_t id)
 bool Hal_SemaphoreRelease(int32_t id)
 {
 	return rtems_semaphore_release(id) == RTEMS_SUCCESSFUL;
+}
+
+void Hal_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
+{
+	Pmc_enablePeripheralClk(&pmc, peripheralId);
+}
+
+uint64_t Hal_GetMainClockFrequency()
+{
+	return mck_frequency;
 }

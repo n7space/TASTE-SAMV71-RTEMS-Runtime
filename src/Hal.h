@@ -32,6 +32,7 @@
 
 #include <Nvic/Nvic.h>
 #include <Uart/Uart.h>
+#include <Pmc/PmcPeripheralId.h>
 
 #ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
@@ -102,5 +103,19 @@ bool Hal_SemaphoreObtain(int32_t id);
  * @return              Bool indicating whether the release was successful
  */
 bool Hal_SemaphoreRelease(int32_t id);
+
+/**
+ * @brief               Enable peripheral clock.
+ *
+ * @param[in] peripheralId clock identifier.
+ */
+void Hal_EnablePeripheralClock(const Pmc_PeripheralId peripheralId);
+
+/**
+ * @brief               Get frequency of main clock.
+ *
+ * @return              Main clock frequency in Hz.
+ */
+uint64_t Hal_GetMainClockFrequency();
 
 #endif
