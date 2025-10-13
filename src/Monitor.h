@@ -136,7 +136,7 @@ int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface);
  *
  * @param[in] overflow_callback  pointer to function that implements message queue overflow callback
  * 
- * @return                       indicats whether the set was successful.
+ * @return                       indicates whether the set was successful.
  */
 bool Monitor_SetMessageQueueOverflowCallback(Monitor_MessageQueueOverflow overflow_callback);
 
@@ -152,7 +152,7 @@ int32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface);
 /**
  * @brief                        Checks and returns maximum reached number of queued items in sporadic interface queue
  *
- * @param[in] interface          pointer to function that implements message queue overflow callback
+ * @param[in] interface          represents interface to obtain information about maximum queue usage
  * 
  * @return                       represents the maximum number of queued items in interface queue if >= 0, and error otherwise.
  */

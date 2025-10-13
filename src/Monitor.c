@@ -173,7 +173,7 @@ bool Monitor_Init()
         idle_cpu_usage_data.average_cpu_usage = 0.0;
     }
 
-    for(int i = 0; i < RUNTIME_THREAD_COUNT - 1; i++){
+    for(int i = 0; i < RUNTIME_THREAD_COUNT; i++){
         maximum_queued_items[i] = 0;
     }
 
@@ -230,7 +230,7 @@ bool Monitor_SetMessageQueueOverflowCallback(Monitor_MessageQueueOverflow overfl
 
 int32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface)
 {
-    if(interface_to_queue_map[interface] <= 0){
+    if(interface_to_queue_map[interface] == RTEMS_ID_NONE){
         return -1;
     }
 
