@@ -28,6 +28,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <rtems.h>
+
 #include <Nvic/Nvic.h>
 #include <Uart/Uart.h>
 
@@ -79,7 +81,7 @@ bool Hal_SleepNs(uint64_t time_ns);
  *
  * @return              ID of the created semaphore
  */
-int32_t Hal_SemaphoreCreate(void);
+rtems_id Hal_SemaphoreCreate(void);
 
 /**
  * @brief               Obtains the indicated semaphore, suspending the

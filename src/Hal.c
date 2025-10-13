@@ -29,7 +29,6 @@
 #include <interfaces_info.h>
 #include <rtems.h>
 
-#include "Xdmac/xdmad.h"
 #include <Nvic/Nvic.h>
 #include <Pio/Pio.h>
 #include <Scb/Scb.h>
@@ -45,8 +44,6 @@
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUNECY
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUNECY (12 * MEGA_HZ)
 #endif
-
-/* rtems_id xdmad_lock; */
 
 static uint32_t created_semaphores_count = 0;
 static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
@@ -251,8 +248,6 @@ bool Hal_Init(void)
 	Tic_enableChannel(&tic, Tic_Channel_0);
 	Tic_triggerChannel(&tic, Tic_Channel_0);
 
-	Init_setup_xdmad_lock();
-
 	return true;
 }
 
@@ -285,7 +280,7 @@ bool Hal_SleepNs(uint64_t time_ns)
 	       RTEMS_SUCCESSFUL;
 }
 
-int32_t Hal_SemaphoreCreate(void)
+rtems_id Hal_SemaphoreCreate(void)
 {
 	if (created_semaphores_count >= RT_MAX_HAL_SEMAPHORES) {
 		return 0;
