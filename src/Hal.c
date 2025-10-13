@@ -202,37 +202,16 @@ bool Hal_Init(void)
 {
 	reloads_counter = 0u;
 
-	// nvic cannot be used for registration of interrupt handlers:
-	// instead, the rtems api shall be used
-	/* rtems_interrupt_handler_install(58, "xdmac", RTEMS_INTERRUPT_UNIQUE, */
-	/* 				(rtems_interrupt_handler)&XDMAC_Handler, */
-	/* 				0); */
-	/* rtems_interrupt_handler_install(7, "uart0", RTEMS_INTERRUPT_UNIQUE, */
-	/* 				(rtems_interrupt_handler)&UART0_Handler, */
-	/* 				0); */
-	/* rtems_interrupt_vector_enable(7); */
-	/* rtems_interrupt_handler_install(8, "uart1", RTEMS_INTERRUPT_UNIQUE, */
-	/* 				(rtems_interrupt_handler)&UART1_Handler, */
-	/* 				0); */
-	/* rtems_interrupt_vector_enable(8); */
-	/* rtems_interrupt_handler_install(44, "uart2", RTEMS_INTERRUPT_UNIQUE, */
-	/* 				(rtems_interrupt_handler)&UART2_Handler, */
-	/* 				0); */
-	/* rtems_interrupt_vector_enable(44); */
-	/* rtems_interrupt_handler_install(45, "uart3", RTEMS_INTERRUPT_UNIQUE, */
-	/* 				(rtems_interrupt_handler)&UART3_Handler, */
-	/* 				0); */
-	/* rtems_interrupt_vector_enable(45); */
-	/* rtems_interrupt_handler_install(46, "uart4", RTEMS_INTERRUPT_UNIQUE, */
-	/* 				(rtems_interrupt_handler)&UART4_Handler, */
-	/* 				0); */
-	/* rtems_interrupt_vector_enable(46); */
-	rtems_interrupt_handler_install(23, "timer0", RTEMS_INTERRUPT_UNIQUE,
-					timer_irq_handler, 0);
-
 	Init_setup_watchdog();
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
 	Pmc_enablePeripheralClk(&pmc, Pmc_PeripheralId_Tc0Ch0);
+
+	// nvic cannot be used for registration of interrupt handlers:
+	// instead, the rtems api shall be used
+	// the interrupt vector table is managed by rtems
+	rtems_interrupt_handler_install(23, "timer0", RTEMS_INTERRUPT_UNIQUE,
+					timer_irq_handler, 0);
+	rtems_interrupt_vector_enable(23);
 
 	extract_mck_frequency();
 
