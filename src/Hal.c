@@ -289,6 +289,26 @@ rtems_id Hal_SemaphoreCreate(void)
 	const rtems_status_code status_code = rtems_semaphore_create(
 		generate_new_hal_semaphore_name(),
 		1, // Initial value, unlocked
+		RTEMS_BINARY_SEMAPHORE,
+		0, // Priority ceiling
+		&hal_semaphore_ids[created_semaphores_count]);
+
+	if (status_code == RTEMS_SUCCESSFUL) {
+		return hal_semaphore_ids[created_semaphores_count++];
+	}
+
+	return 0;
+}
+
+rtems_id Hal_SemaphoreCreateSimple(void)
+{
+	if (created_semaphores_count >= RT_MAX_HAL_SEMAPHORES) {
+		return 0;
+	}
+
+	const rtems_status_code status_code = rtems_semaphore_create(
+		generate_new_hal_semaphore_name(),
+		1, // Initial value, unlocked
 		RTEMS_SIMPLE_BINARY_SEMAPHORE,
 		0, // Priority ceiling
 		&hal_semaphore_ids[created_semaphores_count]);
