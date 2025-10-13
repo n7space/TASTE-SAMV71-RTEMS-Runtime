@@ -48,6 +48,8 @@ struct Monitor_MaximumStackUsageData {
     bool is_found;
 };
 
+Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
+
 static bool handle_activation_log_cyclic_buffer(const enum interfaces_enum interface, 
                                                 const enum Monitor_EntryType entry_type)
 {
@@ -171,11 +173,16 @@ bool Monitor_Init()
         idle_cpu_usage_data.average_cpu_usage = 0.0;
     }
 
+    for(int i = 0; i < RUNTIME_THREAD_COUNT; i++){
+        maximum_queued_items[i] = 0;
+    }
+
     return true;
 }
 
 bool Monitor_MonitoringTick(void)
 {
+    // update information about cpu usage
 	rtems_task_iterate(cpu_usage_visitor, NULL);
     benchmarking_ticks++;
 }
@@ -213,6 +220,31 @@ int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface)
     }
 
     return -1;
+}
+
+bool Monitor_SetMessageQueueOverflowCallback(Monitor_MessageQueueOverflow overflow_callback)
+{
+    Monitor_MessageQueueOverflowCallback = overflow_callback;
+    return true;
+}
+
+int32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface)
+{
+    if(interface_to_queue_map[interface] == RTEMS_ID_NONE){
+        return -1;
+    }
+
+    uint32_t count;
+    if(rtems_message_queue_get_number_pending(interface_to_queue_map[interface], &count) != RTEMS_SUCCESSFUL){
+        return -1;
+    }
+
+    return (int32_t)count;
+}
+
+int32_t Monitor_GetMaximumQueuedItemsCount(const enum interfaces_enum interface)
+{
+    return maximum_queued_items[interface];
 }
 
 bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface)
