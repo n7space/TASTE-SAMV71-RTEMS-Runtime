@@ -118,4 +118,15 @@ void Hal_EnablePeripheralClock(const Pmc_PeripheralId peripheralId);
  */
 uint64_t Hal_GetMainClockFrequency();
 
+/**
+ * @brief               Subscribe to interrupt.
+ *
+ * @param[in] vector    Number of interrupt.
+ * @param[in] info      Short description of interrupt handler.
+ * @param[in] handler   The function to handle interrupt.
+ * @param[in] handler_arg A parameter which shall be passed when calling handler.
+  */
+void Hal_InterruptSubscribe(const rtems_vector_number vector, const char *info,
+			    rtems_interrupt_handler handler, void *handler_arg);
+
 #endif

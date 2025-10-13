@@ -320,3 +320,11 @@ uint64_t Hal_GetMainClockFrequency()
 {
 	return mck_frequency;
 }
+
+void Hal_InterruptSubscribe(const rtems_vector_number vector, const char *info,
+			    rtems_interrupt_handler handler, void *handler_arg)
+{
+	rtems_interrupt_handler_install(vector, info, RTEMS_INTERRUPT_UNIQUE,
+					handler, handler_arg);
+	rtems_interrupt_vector_enable(vector);
+}
