@@ -50,7 +50,7 @@ static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
 static ConcurrentAccessFlag reloads_modified_flag;
 static uint32_t reloads_counter;
-Pmc pmc;
+static Pmc pmc;
 static Tic tic = {};
 
 static uint64_t mck_frequency;
