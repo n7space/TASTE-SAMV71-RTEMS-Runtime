@@ -73,6 +73,19 @@ struct Monitor_InterfaceActivationEntry {
 };
 
 /**
+ * @brief                                       Typedef of callback indicating interface message queue overflow
+ * 
+ * @param[in] interface                         represents interface which queue overflowed
+ * @param[in] number_of_overflowed_messages     represents number of overflowed messages
+ *
+ */
+typedef void (*Monitor_MessageQueueOverflow)(
+	const enum interfaces_enum interface,
+	uint32_t number_of_overflowed_messages);
+
+extern Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
+
+/**
  * @brief                       Initializes the Monitor module.
  *
  * @return                      Bool indicating whether the initialization was
@@ -112,6 +125,44 @@ bool Monitor_GetUsageData(const enum interfaces_enum interface,
  */
 bool Monitor_GetIdleCPUUsageData(
 	struct Monitor_CPUUsageData *const cpu_usage_data);
+
+/**
+ * @brief                       Returns maximum stack usage in bytes of a given sporadic/cyclic interface.
+ *
+ * @param[in] interface         represents interface to obtain information about stack usage
+ * 
+ * @return                      represents maximum stack usage in bytes if >= 0, and error otherwise.
+ */
+int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface);
+
+/**
+ * @brief                        Set message queue overflow callback.
+ *
+ * @param[in] overflow_callback  pointer to function that implements message queue overflow callback
+ * 
+ * @return                       indicates whether the set was successful.
+ */
+bool Monitor_SetMessageQueueOverflowCallback(
+	Monitor_MessageQueueOverflow overflow_callback);
+
+/**
+ * @brief                        Checks and returns current number of queued items in sporadic interface queue
+ *
+ * @param[in] interface          represents interface to obtain information about stack usage
+ * 
+ * @return                       represents the number of queued items in interface queue if >= 0, and error otherwise.
+ */
+int32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface);
+
+/**
+ * @brief                        Checks and returns maximum reached number of queued items in sporadic interface queue
+ *
+ * @param[in] interface          represents interface to obtain information about maximum queue usage
+ * 
+ * @return                       represents the maximum number of queued items in interface queue if >= 0, and error otherwise.
+ */
+int32_t
+Monitor_GetMaximumQueuedItemsCount(const enum interfaces_enum interface);
 
 /**
  * @brief                       Informs the monitor about given interface activation, 
