@@ -8,7 +8,8 @@ target_include_directories(SamV71Core
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(SamV71Core
   PRIVATE
-  SAMV71::Pmc)
+  SAMV71::Pmc
+  SAMV71::Wdt)
 
 add_format_target(SamV71Core)
 
