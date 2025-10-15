@@ -18,6 +18,8 @@ target_link_libraries(Samv71Hal
                 SAMV71::Nvic
                 SAMV71::Pio
                 SAMV71::Pmc
+                SAMV71::Tic
+                SAMV71::Wdt
                 SAMV71::Utils
                 SAMV71::Runtime::Mocks
                 SAMV71::Runtime::Xdmac
