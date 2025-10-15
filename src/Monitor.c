@@ -53,7 +53,10 @@ Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
 static bool handle_activation_log_cyclic_buffer(const enum interfaces_enum interface, 
                                                 const enum Monitor_EntryType entry_type)
 {
-    if(RT_EXEC_LOG_SIZE <= 0 || is_frozen){
+#if RT_EXEC_LOG_SIZE <= 0
+    return false;
+#else
+    if(is_frozen){
         return false;
     }
 
@@ -63,6 +66,7 @@ static bool handle_activation_log_cyclic_buffer(const enum interfaces_enum inter
     activation_entry_counter++;
 
     return true;
+#endif
 }
 
 static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
@@ -261,10 +265,9 @@ bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEn
                                             uint32_t *out_latest_activation_entry_index, 
                                             uint32_t *out_size_of_activation_log)
 {
-    if(RT_EXEC_LOG_SIZE <= 0){
-        return false;
-    }
-
+#if RT_EXEC_LOG_SIZE <= 0
+    return false;
+#else
     *activation_log = activation_log_buffer;
 
     if(activation_entry_counter == 0){
@@ -283,6 +286,7 @@ bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEn
     }
 
     return true;
+#endif
 }
 
 bool Monitor_FreezeInterfaceActivationLogging()
