@@ -56,4 +56,11 @@ void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId);
  */
 uint64_t SamV71Core_GetMainClockFrequency();
 
+/**
+ * @brief               Generate new unique name for semaphore.
+ *
+ * @return              Unique name for semaphore.
+ */
+rtems_name SamV71Core_GenerateNewSemaphoreName();
+
 #endif

@@ -44,3 +44,9 @@ void SamV71Core_InterruptSubscribe(const rtems_vector_number vector,
 					handler, handler_arg);
 	rtems_interrupt_vector_enable(vector);
 }
+
+rtems_name SamV71Core_GenerateNewSemaphoreName()
+{
+	static rtems_name name = rtems_build_name('C', 0, 0, 0);
+	return name++;
+}
