@@ -1,5 +1,6 @@
 add_subdirectory(Mocks)
 add_subdirectory(BrokerLock)
+add_subdirectory(SamV71Core)
 add_subdirectory(Xdmac)
 
 add_library(Samv71Hal STATIC)

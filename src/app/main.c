@@ -21,19 +21,9 @@ rtems_task Init(rtems_task_argument argument)
 {
 }
 
-/* void abort() { rtems_fatal(RTEMS_FATAL_SOURCE_EXIT, 0); } */
-
-/* void __assert_func(const char *file, int line, const char *x, const char *y);
- */
-
-/* void __assert_func(const char *file, int line, const char *x, const char *y)
- * { */
-/*   rtems_fatal(RTEMS_FATAL_SOURCE_EXIT, 0); */
-/* } */
-
 #define CONFIGURE_APPLICATION_NEEDS_CLOCK_DRIVER
 
-#define CONFIGURE_MAXIMUM_PROCESSORS 2
+#define CONFIGURE_MAXIMUM_PROCESSORS 1
 
 #define CONFIGURE_MAXIMUM_BARRIERS 0
 

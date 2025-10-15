@@ -54,7 +54,7 @@ static uint32_t reloads_counter;
 Pmc pmc;
 static Tic tic = {};
 
-static uint64_t mck_frequency;
+uint64_t mck_frequency;
 
 rtems_name generate_new_hal_semaphore_name();
 
@@ -260,7 +260,7 @@ bool Hal_SleepNs(uint64_t time_ns)
 	       RTEMS_SUCCESSFUL;
 }
 
-rtems_id Hal_SemaphoreCreate(void)
+uint32_t Hal_SemaphoreCreate(void)
 {
 	if (created_semaphores_count >= RT_MAX_HAL_SEMAPHORES) {
 		return 0;
