@@ -25,18 +25,20 @@
 extern Pmc pmc;
 extern uint64_t mck_frequency;
 
-void Hal_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
+void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
 {
 	Pmc_enablePeripheralClk(&pmc, peripheralId);
 }
 
-uint64_t Hal_GetMainClockFrequency()
+uint64_t SamV71Core_GetMainClockFrequency()
 {
 	return mck_frequency;
 }
 
-void Hal_InterruptSubscribe(const rtems_vector_number vector, const char *info,
-			    rtems_interrupt_handler handler, void *handler_arg)
+void SamV71Core_InterruptSubscribe(const rtems_vector_number vector,
+				   const char *info,
+				   rtems_interrupt_handler handler,
+				   void *handler_arg)
 {
 	rtems_interrupt_handler_install(vector, info, RTEMS_INTERRUPT_UNIQUE,
 					handler, handler_arg);
