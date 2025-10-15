@@ -9,6 +9,7 @@ target_include_directories(SamV71Core
 target_link_libraries(SamV71Core
   PRIVATE
   SAMV71::Pmc
+  SAMV71::Wdt
   SAMV71::Wdt)
 
 add_format_target(SamV71Core)
