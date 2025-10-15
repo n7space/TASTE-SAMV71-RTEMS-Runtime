@@ -260,7 +260,7 @@ bool Hal_SleepNs(uint64_t time_ns)
 	       RTEMS_SUCCESSFUL;
 }
 
-uint32_t Hal_SemaphoreCreate(void)
+int32_t Hal_SemaphoreCreate(void)
 {
 	if (created_semaphores_count >= RT_MAX_HAL_SEMAPHORES) {
 		return 0;
@@ -280,26 +280,6 @@ uint32_t Hal_SemaphoreCreate(void)
 	return 0;
 }
 
-rtems_id Hal_SemaphoreCreateSimple(void)
-{
-	if (created_semaphores_count >= RT_MAX_HAL_SEMAPHORES) {
-		return 0;
-	}
-
-	const rtems_status_code status_code = rtems_semaphore_create(
-		generate_new_hal_semaphore_name(),
-		1, // Initial value, unlocked
-		RTEMS_SIMPLE_BINARY_SEMAPHORE,
-		0, // Priority ceiling
-		&hal_semaphore_ids[created_semaphores_count]);
-
-	if (status_code == RTEMS_SUCCESSFUL) {
-		return hal_semaphore_ids[created_semaphores_count++];
-	}
-
-	return 0;
-}
-
 bool Hal_SemaphoreObtain(int32_t id)
 {
 	return rtems_semaphore_obtain(id, RTEMS_WAIT, RTEMS_NO_TIMEOUT) ==
@@ -309,22 +289,4 @@ bool Hal_SemaphoreObtain(int32_t id)
 bool Hal_SemaphoreRelease(int32_t id)
 {
 	return rtems_semaphore_release(id) == RTEMS_SUCCESSFUL;
-}
-
-void Hal_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
-{
-	Pmc_enablePeripheralClk(&pmc, peripheralId);
-}
-
-uint64_t Hal_GetMainClockFrequency()
-{
-	return mck_frequency;
-}
-
-void Hal_InterruptSubscribe(const rtems_vector_number vector, const char *info,
-			    rtems_interrupt_handler handler, void *handler_arg)
-{
-	rtems_interrupt_handler_install(vector, info, RTEMS_INTERRUPT_UNIQUE,
-					handler, handler_arg);
-	rtems_interrupt_vector_enable(vector);
 }

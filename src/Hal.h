@@ -28,10 +28,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <rtems.h>
-
-#include <Nvic/Nvic.h>
-
 #ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
 #endif
@@ -68,16 +64,7 @@ bool Hal_SleepNs(uint64_t time_ns);
  *
  * @return              ID of the created semaphore
  */
-uint32_t Hal_SemaphoreCreate(void);
-
-/**
- * @brief               Creates an RTOS backed semaphore. This function is not
- *                      thread safe, but it is assumed to be used only during
- *                      system initialization, from a single thread/Init task.
- *
- * @return              ID of the created semaphore
- */
-rtems_id Hal_SemaphoreCreateSimple(void);
+int32_t Hal_SemaphoreCreate(void);
 
 /**
  * @brief               Obtains the indicated semaphore, suspending the
