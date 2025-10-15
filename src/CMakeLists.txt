@@ -20,7 +20,7 @@ target_link_libraries(Samv71Hal
                 SAMV71::Pmc
                 SAMV71::Utils
                 SAMV71::Runtime::Mocks
-                SAMV71::Runtime::Xdmad
+                SAMV71::Runtime::Xdmac
     PUBLIC      SAMV71::Uart)
 
 add_format_target(Samv71Hal)

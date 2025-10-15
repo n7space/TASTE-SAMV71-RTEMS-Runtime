@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PREFIX=/home/taste/tool-inst
+PREFIX="${HOME}/tool-inst"
 SOURCES=$(dirname $0)
 
 mkdir -p "${PREFIX}/include/TASTE-SAMV71-RTEMS-Runtime/src"
