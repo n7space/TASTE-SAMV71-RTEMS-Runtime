@@ -154,18 +154,18 @@ typedef struct _XdmadCfg {
 
 /** \brief Structure for storing parameters for DMA view0 that can be
  * performed by the DMA Master transfer.*/
-typedef struct _LinkedListDescriporView0 {
+typedef struct _LinkedListDescriptorView0 {
 	/** Next Descriptor Address number. */
 	uint32_t mbr_nda;
 	/** Microblock Control Member. */
 	uint32_t mbr_ubc;
 	/** Transfer Address Member. */
 	uint32_t mbr_ta;
-} LinkedListDescriporView0;
+} LinkedListDescriptorView0;
 
 /** \brief Structure for storing parameters for DMA view1 that can be
  * performed by the DMA Master transfer.*/
-typedef struct _LinkedListDescriporView1 {
+typedef struct _LinkedListDescriptorView1 {
 	/** Next Descriptor Address number. */
 	uint32_t mbr_nda;
 	/** Microblock Control Member. */
@@ -174,11 +174,11 @@ typedef struct _LinkedListDescriporView1 {
 	uint32_t mbr_sa;
 	/** Destination Address Member. */
 	uint32_t mbr_da;
-} LinkedListDescriporView1;
+} LinkedListDescriptorView1;
 
 /** \brief Structure for storing parameters for DMA view2 that can be
  * performed by the DMA Master transfer.*/
-typedef struct _LinkedListDescriporView2 {
+typedef struct _LinkedListDescriptorView2 {
 	/** Next Descriptor Address number. */
 	uint32_t mbr_nda;
 	/** Microblock Control Member. */
@@ -189,11 +189,11 @@ typedef struct _LinkedListDescriporView2 {
 	uint32_t mbr_da;
 	/** Configuration Register. */
 	uint32_t mbr_cfg;
-} LinkedListDescriporView2;
+} LinkedListDescriptorView2;
 
 /** \brief Structure for storing parameters for DMA view3 that can be
  * performed by the DMA Master transfer.*/
-typedef struct _LinkedListDescriporView3 {
+typedef struct _LinkedListDescriptorView3 {
 	/** Next Descriptor Address number. */
 	uint32_t mbr_nda;
 	/** Microblock Control Member. */
@@ -212,7 +212,7 @@ typedef struct _LinkedListDescriporView3 {
 	uint32_t mbr_sus;
 	/** Destination Microblock Stride Member. */
 	uint32_t mbr_dus;
-} LinkedListDescriporView3;
+} LinkedListDescriptorView3;
 
 /**     @}*/
 
