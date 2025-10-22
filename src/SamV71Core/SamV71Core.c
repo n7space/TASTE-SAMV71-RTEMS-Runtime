@@ -23,8 +23,8 @@
 #include <Pmc/Pmc.h>
 
 #define MEGA_HZ 1000000u
-#ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUNECY
-#define MAIN_CRYSTAL_OSCILLATOR_FREQUNECY (12 * MEGA_HZ)
+#ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
+#define MAIN_CRYSTAL_OSCILLATOR_FREQUENCY (12 * MEGA_HZ)
 #endif
 
 // xdmad.c requires global pmc
@@ -37,7 +37,7 @@ static void extract_main_oscilator_frequency(void)
 	Pmc_getMainckConfig(&pmc, &main_clock_config);
 
 	if (main_clock_config.src == Pmc_MainckSrc_XOsc) {
-		mck_frequency = MAIN_CRYSTAL_OSCILLATOR_FREQUNECY;
+		mck_frequency = MAIN_CRYSTAL_OSCILLATOR_FREQUENCY;
 		return;
 	}
 
