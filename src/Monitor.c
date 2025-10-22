@@ -56,11 +56,11 @@ handle_activation_log_cyclic_buffer(const enum interfaces_enum interface,
 				    const enum Monitor_EntryType entry_type)
 {
 #if RT_EXEC_LOG_SIZE <= 0
-    return false;
+	return false;
 #else
-    if(is_frozen){
-        return false;
-    }
+	if (is_frozen) {
+		return false;
+	}
 
 	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE]
 		.interface = interface;
@@ -70,7 +70,7 @@ handle_activation_log_cyclic_buffer(const enum interfaces_enum interface,
 		.timestamp = Hal_GetElapsedTimeInNs();
 	activation_entry_counter++;
 
-    return true;
+	return true;
 #endif
 }
 
@@ -285,9 +285,9 @@ bool Monitor_GetInterfaceActivationEntryLog(
 	uint32_t *out_size_of_activation_log)
 {
 #if RT_EXEC_LOG_SIZE <= 0
-    return false;
+	return false;
 #else
-    *activation_log = activation_log_buffer;
+	*activation_log = activation_log_buffer;
 
 	if (activation_entry_counter == 0) {
 		*out_latest_activation_entry_index = 0;
@@ -303,7 +303,7 @@ bool Monitor_GetInterfaceActivationEntryLog(
 		}
 	}
 
-    return true;
+	return true;
 #endif
 }
 
