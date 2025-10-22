@@ -42,8 +42,8 @@
 struct Monitor_InterfaceUsageData {
 	enum interfaces_enum interface;
 	uint64_t maximum_execution_time;
-    uint64_t minimum_execution_time;
-    uint64_t average_execution_time;
+	uint64_t minimum_execution_time;
+	uint64_t average_execution_time;
 };
 
 /**
@@ -51,16 +51,16 @@ struct Monitor_InterfaceUsageData {
  */
 struct Monitor_CPUUsageData {
 	float maximum_cpu_usage;
-    float minimum_cpu_usage;
-    float average_cpu_usage;
+	float minimum_cpu_usage;
+	float average_cpu_usage;
 };
 
 /**
  * @brief   Struct representing two possible types of entry value
  */
 enum Monitor_EntryType {
-    Monitor_EntryType_activation = 0,
-    Monitor_EntryType_deactivation = 1
+	Monitor_EntryType_activation = 0,
+	Monitor_EntryType_deactivation = 1
 };
 
 /**
@@ -79,7 +79,9 @@ struct Monitor_InterfaceActivationEntry {
  * @param[in] number_of_overflowed_messages     represents number of overflowed messages
  *
  */
-typedef void (*Monitor_MessageQueueOverflow)(const enum interfaces_enum interface, uint32_t number_of_overflowed_messages);
+typedef void (*Monitor_MessageQueueOverflow)(
+	const enum interfaces_enum interface,
+	uint32_t number_of_overflowed_messages);
 
 extern Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
 
@@ -109,7 +111,8 @@ bool Monitor_MonitoringTick(void);
  * 
  * @return                      Bool indicating whether the query about usage data was successful
  */
-bool Monitor_GetUsageData(const enum interfaces_enum interface, struct Monitor_InterfaceUsageData *const usage_data);
+bool Monitor_GetUsageData(const enum interfaces_enum interface,
+			  struct Monitor_InterfaceUsageData *const usage_data);
 
 /**
  * @brief                       Returns structure containing information about current CPU usage in idle state (time when CPU was not
@@ -120,7 +123,8 @@ bool Monitor_GetUsageData(const enum interfaces_enum interface, struct Monitor_I
  * 
  * @return                      Bool indicating whether the query about CPU usage data was successful
  */
-bool Monitor_GetIdleCPUUsageData(struct Monitor_CPUUsageData *const cpu_usage_data);
+bool Monitor_GetIdleCPUUsageData(
+	struct Monitor_CPUUsageData *const cpu_usage_data);
 
 /**
  * @brief                       Returns maximum stack usage in bytes of a given sporadic/cyclic interface.
@@ -138,7 +142,8 @@ int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface);
  * 
  * @return                       indicates whether the set was successful.
  */
-bool Monitor_SetMessageQueueOverflowCallback(Monitor_MessageQueueOverflow overflow_callback);
+bool Monitor_SetMessageQueueOverflowCallback(
+	Monitor_MessageQueueOverflow overflow_callback);
 
 /**
  * @brief                        Checks and returns current number of queued items in sporadic interface queue
@@ -156,7 +161,8 @@ int32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface);
  * 
  * @return                       represents the maximum number of queued items in interface queue if >= 0, and error otherwise.
  */
-int32_t Monitor_GetMaximumQueuedItemsCount(const enum interfaces_enum interface);
+int32_t
+Monitor_GetMaximumQueuedItemsCount(const enum interfaces_enum interface);
 
 /**
  * @brief                       Informs the monitor about given interface activation, 
@@ -192,9 +198,10 @@ bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface);
  * 
  * @return                                           Bool indicating whether the query was successful
  */
-bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry **activation_log, 
-                                            uint32_t *out_latest_activation_entry_index, 
-                                            uint32_t *out_size_of_activation_log);
+bool Monitor_GetInterfaceActivationEntryLog(
+	struct Monitor_InterfaceActivationEntry **activation_log,
+	uint32_t *out_latest_activation_entry_index,
+	uint32_t *out_size_of_activation_log);
 
 /**
  * @brief                       Stops storing of interface activation logs, all activation 

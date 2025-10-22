@@ -29,7 +29,8 @@
 #if RT_EXEC_LOG_SIZE <= 0
 static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
 #else
-static struct Monitor_InterfaceActivationEntry activation_log_buffer[RT_EXEC_LOG_SIZE];
+static struct Monitor_InterfaceActivationEntry
+	activation_log_buffer[RT_EXEC_LOG_SIZE];
 #endif
 
 #define STACK_BYTE_PATTERN (uint32_t)0xA5A5A5A5
@@ -45,42 +46,47 @@ static struct Monitor_CPUUsageData idle_cpu_usage_data;
 struct Monitor_MaximumStackUsageData {
 	enum interfaces_enum interface;
 	uint32_t maximum_stack_usage;
-    bool is_found;
+	bool is_found;
 };
 
 Monitor_MessageQueueOverflow Monitor_MessageQueueOverflowCallback;
 
-static bool handle_activation_log_cyclic_buffer(const enum interfaces_enum interface, 
-                                                const enum Monitor_EntryType entry_type)
+static bool
+handle_activation_log_cyclic_buffer(const enum interfaces_enum interface,
+				    const enum Monitor_EntryType entry_type)
 {
 #if RT_EXEC_LOG_SIZE <= 0
-    return false;
+	return false;
 #else
-    if(is_frozen){
-        return false;
-    }
+	if (is_frozen) {
+		return false;
+	}
 
-    activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE].interface = interface;
-    activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE].entry_type = entry_type;
-    activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE].timestamp = Hal_GetElapsedTimeInNs();
-    activation_entry_counter++;
+	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE]
+		.interface = interface;
+	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE]
+		.entry_type = entry_type;
+	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE]
+		.timestamp = Hal_GetElapsedTimeInNs();
+	activation_entry_counter++;
 
-    return true;
+	return true;
 #endif
 }
 
 static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
 {
-    float usage_percent;
+	float usage_percent;
 	uint32_t integer_val;
 	uint32_t float_val;
-    Timestamp_Control uptime;
+	Timestamp_Control uptime;
 	const Timestamp_Control used_time =
-	    _Thread_Get_CPU_time_used_after_last_reset(the_thread);
+		_Thread_Get_CPU_time_used_after_last_reset(the_thread);
 
 	_TOD_Get_uptime(&uptime);
 	_Timestamp_Subtract(&uptime_at_last_reset, &uptime, &total_usage_time);
-	_Timestamp_Divide(&used_time, &total_usage_time, &integer_val, &float_val);
+	_Timestamp_Divide(&used_time, &total_usage_time, &integer_val,
+			  &float_val);
 
 	usage_percent = (float)float_val / TOD_NANOSECONDS_PER_MICROSECOND;
 	usage_percent += (float)integer_val;
@@ -94,230 +100,242 @@ static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
 	}
 
 	idle_cpu_usage_data.average_cpu_usage =
-	    idle_cpu_usage_data.average_cpu_usage +
-	    (usage_percent - idle_cpu_usage_data.average_cpu_usage) /
-		(benchmarking_ticks + 1);
+		idle_cpu_usage_data.average_cpu_usage +
+		(usage_percent - idle_cpu_usage_data.average_cpu_usage) /
+			(benchmarking_ticks + 1);
 
-    // only first idle thread is needed, stop iteration after first step
-    return true;
+	// only first idle thread is needed, stop iteration after first step
+	return true;
 }
 
-static inline void *find_high_water_mark(const void *stack_start, const uint32_t stack_size)
+static inline void *find_high_water_mark(const void *stack_start,
+					 const uint32_t stack_size)
 {
-#if ( CPU_STACK_GROWS_UP == TRUE )
+#if (CPU_STACK_GROWS_UP == TRUE)
 
-    for(uintptr_t pointer = (uintptr_t)stack_start + stack_size; pointer > (uintptr_t)stack_start; pointer -= sizeof(uint32_t)){
-        if(*(uint32_t *)pointer != STACK_BYTE_PATTERN){
-            return (void *)pointer;
-        }
-    }
-      
+	for (uintptr_t pointer = (uintptr_t)stack_start + stack_size;
+	     pointer > (uintptr_t)stack_start; pointer -= sizeof(uint32_t)) {
+		if (*(uint32_t *)pointer != STACK_BYTE_PATTERN) {
+			return (void *)pointer;
+		}
+	}
+
 #else
 
-    for(uintptr_t pointer = (uintptr_t )stack_start; pointer < (uintptr_t)stack_start + stack_size; pointer += sizeof(uint32_t)){
-        if(*(uint32_t *)pointer != STACK_BYTE_PATTERN){
-            return (void *)pointer;
-        }
-    }
+	for (uintptr_t pointer = (uintptr_t)stack_start;
+	     pointer < (uintptr_t)stack_start + stack_size;
+	     pointer += sizeof(uint32_t)) {
+		if (*(uint32_t *)pointer != STACK_BYTE_PATTERN) {
+			return (void *)pointer;
+		}
+	}
 
 #endif
 
-   return NULL;
+	return NULL;
 }
 
 // Where the pattern goes in the stack area is dependent upon
 // whether the stack grow to the high or low area of the memory.
-static inline uint32_t calculate_used_stack(void *stack_start, uint32_t stack_size, void *high_water_mark)
+static inline uint32_t calculate_used_stack(void *stack_start,
+					    uint32_t stack_size,
+					    void *high_water_mark)
 {
 #if (CPU_STACK_GROWS_UP == TRUE)
-    return (uint8_t *)(high_water_mark) - (uint8_t *)(stack_start);
+	return (uint8_t *)(high_water_mark) - (uint8_t *)(stack_start);
 #else
-    return ((uint8_t *)(stack_start) + (stack_size)) - (uint8_t *)(high_water_mark);
+	return ((uint8_t *)(stack_start) + (stack_size)) -
+	       (uint8_t *)(high_water_mark);
 #endif
 }
 
 static bool thread_stack_usage_visitor(Thread_Control *the_thread, void *arg)
 {
-    struct Monitor_MaximumStackUsageData *stack_usage_data = (struct Monitor_MaximumStackUsageData *)arg;
-    const uint32_t id = the_thread->Object.id;
+	struct Monitor_MaximumStackUsageData *stack_usage_data =
+		(struct Monitor_MaximumStackUsageData *)arg;
+	const uint32_t id = the_thread->Object.id;
 
-    if(threads_info[stack_usage_data->interface].id != id){
-        return false;
-    }
+	if (threads_info[stack_usage_data->interface].id != id) {
+		return false;
+	}
 
-    const Stack_Control *stack = &the_thread->Start.Initial_stack;
+	const Stack_Control *stack = &the_thread->Start.Initial_stack;
 
-    // This is likely to occur if the stack checker is not actually enabled
-    if (stack->area == NULL) {
-        return true;
-    }
+	// This is likely to occur if the stack checker is not actually enabled
+	if (stack->area == NULL) {
+		return true;
+	}
 
-    uint32_t stack_size = stack->size;
-    void *stack_start = stack->area;
-    void *high_water_mark = find_high_water_mark(stack_start, stack_size);
+	uint32_t stack_size = stack->size;
+	void *stack_start = stack->area;
+	void *high_water_mark = find_high_water_mark(stack_start, stack_size);
 
-    if(high_water_mark){
-        stack_usage_data->maximum_stack_usage = 
-            calculate_used_stack(stack_start, stack_size, high_water_mark);
-    }
+	if (high_water_mark) {
+		stack_usage_data->maximum_stack_usage = calculate_used_stack(
+			stack_start, stack_size, high_water_mark);
+	}
 
-    stack_usage_data->is_found = true;
-    return true;
+	stack_usage_data->is_found = true;
+	return true;
 }
 
 bool Monitor_Init()
 {
-    _Timestamp_Set_to_zero(&total_usage_time);
-    rtems_cpu_usage_reset();
+	_Timestamp_Set_to_zero(&total_usage_time);
+	rtems_cpu_usage_reset();
 	_TOD_Get_uptime(&uptime_at_last_reset);
-	
-    for(int i = 0; i < RUNTIME_THREAD_COUNT; i++){
-        idle_cpu_usage_data.maximum_cpu_usage = 0.0;
-        idle_cpu_usage_data.minimum_cpu_usage = FLT_MAX;
-        idle_cpu_usage_data.average_cpu_usage = 0.0;
-    }
 
-    for(int i = 0; i < RUNTIME_THREAD_COUNT; i++){
-        maximum_queued_items[i] = 0;
-    }
+	for (int i = 0; i < RUNTIME_THREAD_COUNT; i++) {
+		maximum_queued_items[i] = 0;
+	}
 
-    return true;
+	return true;
 }
 
 bool Monitor_MonitoringTick(void)
 {
-    // update information about cpu usage
+	// update information about cpu usage
 	rtems_task_iterate(cpu_usage_visitor, NULL);
-    benchmarking_ticks++;
+	benchmarking_ticks++;
 }
 
-bool Monitor_GetUsageData(const enum interfaces_enum interface, struct Monitor_InterfaceUsageData *const usage_data)
+bool Monitor_GetUsageData(const enum interfaces_enum interface,
+			  struct Monitor_InterfaceUsageData *const usage_data)
 {
-    usage_data->interface = interface;
-    usage_data->maximum_execution_time = threads_info[interface].max_thread_execution_time;
-    usage_data->minimum_execution_time = threads_info[interface].min_thread_execution_time;
-    usage_data->average_execution_time = (uint64_t)threads_info[interface].mean_thread_execution_time;
-    return true;
+	usage_data->interface = interface;
+	usage_data->maximum_execution_time =
+		threads_info[interface].max_thread_execution_time;
+	usage_data->minimum_execution_time =
+		threads_info[interface].min_thread_execution_time;
+	usage_data->average_execution_time =
+		(uint64_t)threads_info[interface].mean_thread_execution_time;
+	return true;
 }
 
-bool Monitor_GetIdleCPUUsageData(struct Monitor_CPUUsageData *const cpu_usage_data)
+bool Monitor_GetIdleCPUUsageData(
+	struct Monitor_CPUUsageData *const cpu_usage_data)
 {
-    *cpu_usage_data = idle_cpu_usage_data;
-    return true;
+	*cpu_usage_data = idle_cpu_usage_data;
+	return true;
 }
 
 int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface)
 {
 #ifndef RT_MEASURE_STACK
-    return -1;
+	return -1;
 #endif
 
-    struct Monitor_MaximumStackUsageData stack_usage;
-    stack_usage.interface = interface;
-    stack_usage.maximum_stack_usage = 0;
-    stack_usage.is_found = false;
+	struct Monitor_MaximumStackUsageData stack_usage;
+	stack_usage.interface = interface;
+	stack_usage.maximum_stack_usage = 0;
+	stack_usage.is_found = false;
 
-    rtems_task_iterate(thread_stack_usage_visitor, &stack_usage);
+	rtems_task_iterate(thread_stack_usage_visitor, &stack_usage);
 
-    if(stack_usage.is_found){
-        return stack_usage.maximum_stack_usage;
-    }
+	if (stack_usage.is_found) {
+		return stack_usage.maximum_stack_usage;
+	}
 
-    return -1;
+	return -1;
 }
 
-bool Monitor_SetMessageQueueOverflowCallback(Monitor_MessageQueueOverflow overflow_callback)
+bool Monitor_SetMessageQueueOverflowCallback(
+	Monitor_MessageQueueOverflow overflow_callback)
 {
-    Monitor_MessageQueueOverflowCallback = overflow_callback;
-    return true;
+	Monitor_MessageQueueOverflowCallback = overflow_callback;
+	return true;
 }
 
 int32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface)
 {
-    if(interface_to_queue_map[interface] == RTEMS_ID_NONE){
-        return -1;
-    }
+	if (interface_to_queue_map[interface] == RTEMS_ID_NONE) {
+		return -1;
+	}
 
-    uint32_t count;
-    if(rtems_message_queue_get_number_pending(interface_to_queue_map[interface], &count) != RTEMS_SUCCESSFUL){
-        return -1;
-    }
+	uint32_t count;
+	if (rtems_message_queue_get_number_pending(
+		    interface_to_queue_map[interface], &count) !=
+	    RTEMS_SUCCESSFUL) {
+		return -1;
+	}
 
-    return (int32_t)count;
+	return (int32_t)count;
 }
 
 int32_t Monitor_GetMaximumQueuedItemsCount(const enum interfaces_enum interface)
 {
-    return maximum_queued_items[interface];
+	return maximum_queued_items[interface];
 }
 
 bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface)
 {
-    return handle_activation_log_cyclic_buffer(interface, Monitor_EntryType_activation);
+	return handle_activation_log_cyclic_buffer(
+		interface, Monitor_EntryType_activation);
 }
 
 bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface)
 {
-    return handle_activation_log_cyclic_buffer(interface, Monitor_EntryType_deactivation);
+	return handle_activation_log_cyclic_buffer(
+		interface, Monitor_EntryType_deactivation);
 }
 
-bool Monitor_GetInterfaceActivationEntryLog(struct Monitor_InterfaceActivationEntry **activation_log, 
-                                            uint32_t *out_latest_activation_entry_index, 
-                                            uint32_t *out_size_of_activation_log)
+bool Monitor_GetInterfaceActivationEntryLog(
+	struct Monitor_InterfaceActivationEntry **activation_log,
+	uint32_t *out_latest_activation_entry_index,
+	uint32_t *out_size_of_activation_log)
 {
 #if RT_EXEC_LOG_SIZE <= 0
-    return false;
+	return false;
 #else
-    *activation_log = activation_log_buffer;
+	*activation_log = activation_log_buffer;
 
-    if(activation_entry_counter == 0){
-        *out_latest_activation_entry_index = 0;
-        *out_size_of_activation_log = 0;
-    }
-    else{
-        *out_latest_activation_entry_index = (activation_entry_counter % RT_EXEC_LOG_SIZE) - 1;
+	if (activation_entry_counter == 0) {
+		*out_latest_activation_entry_index = 0;
+		*out_size_of_activation_log = 0;
+	} else {
+		*out_latest_activation_entry_index =
+			(activation_entry_counter % RT_EXEC_LOG_SIZE) - 1;
 
-        if(activation_entry_counter > RT_EXEC_LOG_SIZE){
-            *out_size_of_activation_log = RT_EXEC_LOG_SIZE;
-        }
-        else{
-            *out_size_of_activation_log = activation_entry_counter;
-        }
-    }
+		if (activation_entry_counter > RT_EXEC_LOG_SIZE) {
+			*out_size_of_activation_log = RT_EXEC_LOG_SIZE;
+		} else {
+			*out_size_of_activation_log = activation_entry_counter;
+		}
+	}
 
-    return true;
+	return true;
 #endif
 }
 
 bool Monitor_FreezeInterfaceActivationLogging()
 {
-    if(RT_EXEC_LOG_SIZE <= 0){
-        return false;
-    }
+	if (RT_EXEC_LOG_SIZE <= 0) {
+		return false;
+	}
 
-    is_frozen = true;
+	is_frozen = true;
 
-    return true;
+	return true;
 }
 
 bool Monitor_UnfreezeInterfaceActivationLogging()
 {
-    if(RT_EXEC_LOG_SIZE <= 0){
-        return false;
-    }
+	if (RT_EXEC_LOG_SIZE <= 0) {
+		return false;
+	}
 
-    is_frozen = false;
+	is_frozen = false;
 
-    return true;
+	return true;
 }
 
 bool Monitor_ClearInterfaceActivationLog()
 {
-    if(RT_EXEC_LOG_SIZE <= 0){
-        return false;
-    }
+	if (RT_EXEC_LOG_SIZE <= 0) {
+		return false;
+	}
 
-    activation_entry_counter = 0;
+	activation_entry_counter = 0;
 
-    return true;
+	return true;
 }

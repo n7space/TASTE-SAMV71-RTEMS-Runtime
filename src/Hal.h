@@ -28,6 +28,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifndef RT_MAX_HAL_SEMAPHORES
+#define RT_MAX_HAL_SEMAPHORES 8
+#endif
+
 /**
  * @brief               Initializes the Hal module.
  *
