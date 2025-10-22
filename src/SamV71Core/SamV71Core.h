@@ -30,6 +30,11 @@
 #include <Pmc/PmcPeripheralId.h>
 
 /**
+ * @brief               Initialize SAMV71 Core module.
+ */
+void SamV71Core_Init();
+
+/**
  * @brief               Subscribe to interrupt.
  *
  * @param[in] vector    Number of interrupt.

@@ -5,6 +5,6 @@ target_include_directories(RtemsApp
     PRIVATE     ..)
 target_link_libraries(RtemsApp
     PRIVATE     SAMV71::Uart
-                SAMV71::Runtime::Hal)
+                SAMV71::Runtime)
 
 add_format_target(RtemsApp)

@@ -13,7 +13,7 @@ target_include_directories(Samv71RuntimeXdmac
 target_link_libraries(Samv71RuntimeXdmac
     PRIVATE     SAMV71::Pmc
                 Samv71Scb
-                SAMV71::Runtime::Hal)
+                SAMV71::Runtime)
 
 add_format_target(Samv71RuntimeXdmac)
 
