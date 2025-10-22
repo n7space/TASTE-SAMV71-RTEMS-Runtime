@@ -27,10 +27,11 @@
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUNECY (12 * MEGA_HZ)
 #endif
 
-extern Pmc pmc;
+// xdmad.c requires global pmc
+Pmc pmc;
 static uint64_t mck_frequency = 0;
 
-static void extract_main_oscilator_frequency()
+static void extract_main_oscilator_frequency(void)
 {
 	Pmc_MainckConfig main_clock_config;
 	Pmc_getMainckConfig(&pmc, &main_clock_config);
@@ -84,7 +85,7 @@ static void apply_plla_config(Pmc_MasterckConfig *master_clock_config)
 	}
 }
 
-static void extract_mck_frequency()
+static void extract_mck_frequency(void)
 {
 	Pmc_MasterckConfig master_clock_config;
 	Pmc_getMasterckConfig(&pmc, &master_clock_config);
@@ -139,8 +140,10 @@ static void extract_mck_frequency()
 	}
 }
 
-void SamV71Core_Init()
+void SamV71Core_Init(void)
 {
+	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
+
 	extract_mck_frequency();
 }
 
@@ -149,7 +152,7 @@ void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId)
 	Pmc_enablePeripheralClk(&pmc, peripheralId);
 }
 
-uint64_t SamV71Core_GetMainClockFrequency()
+uint64_t SamV71Core_GetMainClockFrequency(void)
 {
 	return mck_frequency;
 }
@@ -164,7 +167,7 @@ void SamV71Core_InterruptSubscribe(const rtems_vector_number vector,
 	rtems_interrupt_vector_enable(vector);
 }
 
-rtems_name SamV71Core_GenerateNewSemaphoreName()
+rtems_name SamV71Core_GenerateNewSemaphoreName(void)
 {
 	static rtems_name name = rtems_build_name('C', 0, 0, 0);
 	return name++;

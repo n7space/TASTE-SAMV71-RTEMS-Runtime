@@ -46,8 +46,6 @@ static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 
 static ConcurrentAccessFlag reloads_modified_flag;
 static uint32_t reloads_counter;
-// xdmad.c requires global pmc
-Pmc pmc;
 static Tic tic = {};
 
 rtems_name generate_new_hal_semaphore_name();
@@ -84,13 +82,10 @@ void timer_irq_handler()
 	Tic_getChannelStatus(&tic, Tic_Channel_0, &status);
 }
 
-bool Hal_Init(void)
+static void Hal_InitTimer(void)
 {
 	reloads_counter = 0u;
-
-	Init_setup_watchdog();
-	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
-	Pmc_enablePeripheralClk(&pmc, Pmc_PeripheralId_Tc0Ch0);
+	SamV71Core_EnablePeripheralClock(Pmc_PeripheralId_Tc0Ch0);
 
 	// NVIC cannot be used for registration of interrupt handlers
 	// instead, the RTEMS API shall be used: the interrupt vector table is managed by RTEMS,
@@ -101,9 +96,6 @@ bool Hal_Init(void)
 					RTEMS_INTERRUPT_UNIQUE,
 					timer_irq_handler, 0);
 	rtems_interrupt_vector_enable(Nvic_Irq_Timer0_Channel0);
-
-	SamV71Core_Init();
-
 	Tic_init(&tic, Tic_Id_0);
 	Tic_writeProtect(&tic, false);
 
@@ -115,6 +107,13 @@ bool Hal_Init(void)
 
 	Tic_enableChannel(&tic, Tic_Channel_0);
 	Tic_triggerChannel(&tic, Tic_Channel_0);
+}
+
+bool Hal_Init(void)
+{
+	Init_setup_watchdog();
+	SamV71Core_Init();
+	Hal_InitTimer();
 
 	return true;
 }

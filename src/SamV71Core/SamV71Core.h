@@ -32,7 +32,7 @@
 /**
  * @brief               Initialize SAMV71 Core module.
  */
-void SamV71Core_Init();
+void SamV71Core_Init(void);
 
 /**
  * @brief               Subscribe to interrupt.
@@ -59,13 +59,13 @@ void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId);
  *
  * @return              Main clock frequency in Hz.
  */
-uint64_t SamV71Core_GetMainClockFrequency();
+uint64_t SamV71Core_GetMainClockFrequency(void);
 
 /**
  * @brief               Generate new unique name for semaphore.
  *
  * @return              Unique name for semaphore.
  */
-rtems_name SamV71Core_GenerateNewSemaphoreName();
+rtems_name SamV71Core_GenerateNewSemaphoreName(void);
 
 #endif
