@@ -9,10 +9,13 @@ target_sources(Samv71Runtime
   Monitor.c
   ThreadsCommon.c
   FaultHandler.c
+  DeathReportWriter.c
   PUBLIC      Hal.h
   Monitor.h
   ThreadsCommon.h
-  FaultHandler.h)
+  FaultHandler.h
+  DeathReport.h
+  DeathReportWriter.h)
 target_include_directories(Samv71Runtime
     PRIVATE     ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(Samv71Runtime
