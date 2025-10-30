@@ -20,7 +20,7 @@
 #include <DeathReportWriter.h>
 #include <DeathReport.h>
 
-static void *boot_report __attribute__((section("BOOT_REPORT_SECTION")));
+void *const boot_report = (void*)0x2045F968; // SAMRH71 BSW boot report address
 
 static void save_stack(DeathReportWriter_DeathReport *const death_report)
 {

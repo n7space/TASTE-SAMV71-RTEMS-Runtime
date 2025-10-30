@@ -40,18 +40,12 @@ void __attribute__((noinline)) Fault_HandlerTail(void)
 
 void Fault_Handler()
 {
-  volatile int i = 5;
-  while(1){}
-  // This function is a "default" handler pointed to as an alias. So it has to be defined in this
-  // translation unit (not another S file). An assembly block outside of a function body is
-  // interpreted after the C compiler pass, so it counts as a different translation unit
-  // (resulting in an undefined symbol for the alias). Because of that, the code to move
-  // the registers has to be done in inline assembly. In order to avoid a preamble which
+  // In order to avoid a preamble which
   // interferes with the SP and R7 contents, the function is declared as naked. In order
   // not to break anything due to the lack of preamble, no local variables can be used.
 
   // Watchdog reset before fault handling.
-  /*asm volatile("ldr r0, WdtRstKey \n"
+  asm volatile("ldr r0, WdtRstKey \n"
                "ldr r1, WdtCrAddr \n"
                "str r0, [r1] \n");
 
@@ -109,10 +103,10 @@ void Fault_Handler()
                "str sp, [r0, %[SpOffset]]\n"          // Save SP.
                // Jump to the C code part of the handler. We are not coming back.
                "b %[Tail]\n"
-               "BootReportSectionBegin: .word BOOT_REPORT_BEGIN\n"
+               "BootReportSectionBegin: .word 0x2003F910\n"
                "CfsrAddress:            .word 0xE000ED28\n"
-               "WdtCrAddr:              .word 0x40100250 \n"
-               "WdtRstKey:              .word 0xA5000001 \n"
+               "WdtCrAddr:              .word 0x40100250\n"
+               "WdtRstKey:              .word 0xA5000001\n"
                :
                : [DeathReportOffset] "i"(DEATH_REPORT_OFFSET),
                [ExceptionIdOffset] "i"(offsetof(DeathReportWriter_DeathReport, exception_id)),
@@ -143,7 +137,7 @@ void Fault_Handler()
                [MmarOffset] "i"(offsetof(DeathReportWriter_DeathReport, system_control_block.mmar)),
                [BfarOffset] "i"(offsetof(DeathReportWriter_DeathReport, system_control_block.bfar)),
                [SpOffset] "i"(offsetof(DeathReportWriter_DeathReport, stack_trace_pointer)),
-               [Tail] "i"(&Fault_HandlerTail));*/
+               [Tail] "i"(&Fault_HandlerTail));
 }
 
 bool FaultHandler_Init()

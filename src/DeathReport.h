@@ -29,15 +29,9 @@
 #include <stdint.h>
 
 /**
- * @brief   Death report offset in BSW Boot Report
+ * @brief   Death report offset in BSW Boot Report calucaled for SAMRH71
  */
-#if defined(N7S_TARGET_SAMV71Q21)
 #define DEATH_REPORT_OFFSET 352
-#elif defined(N7S_TARGET_SAMRH71F20)
-#define DEATH_REPORT_OFFSET 380
-#else
-#error Bad target platform
-#endif
 
 /**
  * @brief   Death report stack trace size given in 4 bytes words
