@@ -38,11 +38,20 @@ void __attribute__((noinline)) Fault_HandlerTail(void)
 	Rstc_resetSystem();
 }
 
-void Fault_Handler()
+void __attribute__((naked, aligned(8))) Fault_Handler()
 {
   // In order to avoid a preamble which
   // interferes with the SP and R7 contents, the function is declared as naked. In order
   // not to break anything due to the lack of preamble, no local variables can be used.
+
+  // emit Thumb instruction and check which stack is active
+  asm volatile(".syntax unified \n"
+               ".thumb  \n"
+               ".align 2 \n"
+               "tst lr, #4 \n"
+               "ite eq \n"
+               "mrseq r0, msp \n"
+               "mrsne r0, psp \n");
 
   // Watchdog reset before fault handling.
   asm volatile("ldr r0, WdtRstKey \n"
@@ -103,7 +112,7 @@ void Fault_Handler()
                "str sp, [r0, %[SpOffset]]\n"          // Save SP.
                // Jump to the C code part of the handler. We are not coming back.
                "b %[Tail]\n"
-               "BootReportSectionBegin: .word 0x2003F910\n"
+               "BootReportSectionBegin: .word 0x2045F968\n"
                "CfsrAddress:            .word 0xE000ED28\n"
                "WdtCrAddr:              .word 0x40100250\n"
                "WdtRstKey:              .word 0xA5000001\n"

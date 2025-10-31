@@ -26,7 +26,7 @@
 
 extern const char _ISR_Stack_area_end[];
 
-void Fault_Handler();
+void __attribute__((naked, aligned(8))) Fault_Handler();
 
 __attribute__((aligned(VECTOR_TABLE_ALIGNMENT)))
 const Nvic_VectorTable exception_table = {
