@@ -45,13 +45,14 @@ void __attribute__((naked, aligned(8))) Fault_Handler()
   // not to break anything due to the lack of preamble, no local variables can be used.
 
   // emit Thumb instruction and check which stack is active
+  // save stack pointer to R3
   asm volatile(".syntax unified \n"
                ".thumb  \n"
                ".align 2 \n"
                "tst lr, #4 \n"
                "ite eq \n"
-               "mrseq r0, msp \n"
-               "mrsne r0, psp \n");
+               "mrseq r3, msp \n"
+               "mrsne r3, psp \n");
 
   // Watchdog reset before fault handling.
   asm volatile("ldr r0, WdtRstKey \n"
@@ -64,13 +65,13 @@ void __attribute__((naked, aligned(8))) Fault_Handler()
                "mrs r1, ipsr\n"                       // Read IPSR.
                "and r1, r1, 0x3F\n"                   // Extract Exception number.
                "str r1, [r0, %[ExceptionIdOffset]]\n" // Save Exception number.
-               "ldr r1, [sp, #0]\n"                   // Old R0 is at [SP + 0].
+               "ldr r1, [r3, #0]\n"                   // Old R0 is at [R3 + 0].
                "str r1, [r0, %[R0Offset]]\n"          // Save old R0.
-               "ldr r1, [sp, #4]\n"                   // Old R1 is at [SP + 4].
+               "ldr r1, [r3, #4]\n"                   // Old R1 is at [R3 + 4].
                "str r1, [r0, %[R1Offset]]\n"          // Save old R1.
-               "ldr r1, [sp, #8]\n"                   // Old R2 is at [SP + 8].
+               "ldr r1, [r3, #8]\n"                   // Old R2 is at [R3 + 8].
                "str r1, [r0, %[R2Offset]]\n"          // Save old R2.
-               "ldr r1, [sp, #12]\n"                  // Old R3 is at [SP + 12].
+               "ldr r1, [r3, #12]\n"                  // Old R3 is at [R3 + 12].
                "str r1, [r0, %[R3Offset]]\n"          // Save old R3.
                "str r4, [r0, %[R4Offset]]\n"          // Save R4.
                "str r5, [r0, %[R5Offset]]\n"          // Save R5.
@@ -80,17 +81,17 @@ void __attribute__((naked, aligned(8))) Fault_Handler()
                "str r9, [r0, %[R9Offset]]\n"          // Save R9.
                "str r10, [r0, %[R10Offset]]\n"        // Save R10.
                "str r11, [r0, %[R11Offset]]\n"        // Save R11.
-               "ldr r1, [sp, #16]\n"                  // Old R12 is at [SP + 16].
+               "ldr r1, [r3, #16]\n"                  // Old R12 is at [R3 + 16].
                "str r1, [r0, %[R12Offset]]\n"         // Save old R12.
                "mrs r1, msp\n"                        // Transfer special register to r1.
                "str r1, [r0, %[MspOffset]]\n"         // Save MSP.
                "mrs r1, psp\n"                        // Transfer special register to r1.
                "str r1, [r0, %[PspOffset]]\n"         // Save PSP.
-               "ldr r1, [sp, #20]\n"                  // Old LR is at [SP + 20].
+               "ldr r1, [r3, #20]\n"                  // Old LR is at [R3 + 20].
                "str r1, [r0, %[LrOffset]]\n"          // Save old LR.
-               "ldr r1, [sp, #24]\n"                  // Old PC is at [SP + 24].
+               "ldr r1, [r3, #24]\n"                  // Old PC is at [R3 + 24].
                "str r1, [r0, %[PcOffset]]\n"          // Save old PC.
-               "ldr r1, [sp, #28]\n"                  // Old PSR is at [SP + 28].
+               "ldr r1, [r3, #28]\n"                  // Old PSR is at [R3 + 28].
                "str r1, [r0, %[PsrOffset]]\n"         // Save old PSR.
                "mrs r1, primask\n"                    // Transfer special register to r1.
                "str r1, [r0, %[PrimaskOffset]]\n"     // Save PRIMASK.
@@ -109,7 +110,7 @@ void __attribute__((naked, aligned(8))) Fault_Handler()
                "str r2, [r0, %[MmarOffset]]\n"        // Save MMAR.
                "ldr r2, [r1]\n"                       // Load BFAR.
                "str r2, [r0, %[BfarOffset]]\n"        // Save BFAR.
-               "str sp, [r0, %[SpOffset]]\n"          // Save SP.
+               "str r3, [r0, %[SpOffset]]\n"          // Save SP.
                // Jump to the C code part of the handler. We are not coming back.
                "b %[Tail]\n"
                "BootReportSectionBegin: .word 0x2045F968\n"
