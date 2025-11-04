@@ -37,9 +37,9 @@ static uint16_t calculate_crc(const uint8_t *const data, const size_t length)
 {
 	uint16_t crc = 0xFFFF;  // initial value
 
-    for (size_t i = 0; i < length; i++) {
+    for (int i = 0; i < length; i++) {
         crc ^= (uint16_t)data[i] << 8;
-        for (uint8_t j = 0; j < 8; j++) {
+        for (int j = 0; j < 8; j++) {
             if (crc & 0x8000)
                 crc = (crc << 1) ^ 0x1021;
             else
@@ -65,6 +65,7 @@ bool DeathReportWriter_Init()
 	return true;
 }
 
+__attribute__((noinline, aligned(8)))
 bool DeathReportWriter_GenerateDeathReport()
 {
 	// SAMRH71 BSW boot report address
@@ -74,9 +75,11 @@ bool DeathReportWriter_GenerateDeathReport()
 		boot_report + DEATH_REPORT_OFFSET;
 	save_stack(death_report);
 
+	const uint16_t crc = calculate_report_crc(death_report, sizeof(DeathReportWriter_DeathReport));
+
 	death_report->padding = 0u;
 	death_report->was_seen = false;
-	death_report->checksum = 0u;
+	death_report->checksum = crc;
 
 	return true;
 }

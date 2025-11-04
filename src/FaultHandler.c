@@ -29,13 +29,14 @@
 
 extern const Nvic_VectorTable exception_table;
 
-void __attribute__((noinline)) Fault_HandlerTail(void)
+void __attribute__((noinline, noreturn, aligned(8))) Fault_HandlerTail(void)
 {
   DeathReportWriter_GenerateDeathReport();
 
   (void)Scb_cleanDCache();
 	(void)Scb_invalidateDCache();
 	Rstc_resetSystem();
+  while(1);
 }
 
 void __attribute__((naked, aligned(8))) Fault_Handler()
@@ -49,6 +50,7 @@ void __attribute__((naked, aligned(8))) Fault_Handler()
   asm volatile(".syntax unified \n"
                ".thumb  \n"
                ".align 2 \n"
+               "cpsid i\n"
                "tst lr, #4 \n"
                "ite eq \n"
                "mrseq r3, msp \n"
@@ -158,9 +160,7 @@ bool FaultHandler_Init()
 	scb->shcsr = scb->shcsr | SCB_SHCSR_USGFAULTENA_MASK;
 	scb->ccr |= SCB_CCR_DIV_0_TRP_MASK;
 
-  Nvic_relocateVectorTableUnsafe(&exception_table);
-  Nvic_enableIrq();
-  Nvic_enableFaultIrq();
+  Nvic_relocateVectorTable(&exception_table);
 
 	return true;
 }
