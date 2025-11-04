@@ -20,6 +20,10 @@
 #include <DeathReportWriter.h>
 #include <DeathReport.h>
 
+#define CRC_INITIAL_VALUE 0xFFFF
+#define CRC_POLYNOMIAL 0x1021
+#define CRC_MOST_SYGNIFICANT_BIT 0x8000
+
 static void save_stack(DeathReportWriter_DeathReport *const death_report)
 {
 	const uint32_t stack_size = DEATH_REPORT_STACK_TRACE_SIZE;
@@ -35,13 +39,13 @@ static void save_stack(DeathReportWriter_DeathReport *const death_report)
 
 static uint16_t calculate_crc(const uint8_t *const data, const size_t length)
 {
-	uint16_t crc = 0xFFFF;  // initial value
+	uint16_t crc = CRC_INITIAL_VALUE;
 
     for (int i = 0; i < length; i++) {
         crc ^= (uint16_t)data[i] << 8;
         for (int j = 0; j < 8; j++) {
-            if (crc & 0x8000)
-                crc = (crc << 1) ^ 0x1021;
+            if (crc & CRC_MOST_SYGNIFICANT_BIT)
+                crc = (crc << 1) ^ CRC_POLYNOMIAL;
             else
                 crc <<= 1;
         }
@@ -65,7 +69,6 @@ bool DeathReportWriter_Init()
 	return true;
 }
 
-__attribute__((noinline, aligned(8)))
 bool DeathReportWriter_GenerateDeathReport()
 {
 	// SAMRH71 BSW boot report address
@@ -75,11 +78,9 @@ bool DeathReportWriter_GenerateDeathReport()
 		boot_report + DEATH_REPORT_OFFSET;
 	save_stack(death_report);
 
-	const uint16_t crc = calculate_report_crc(death_report, sizeof(DeathReportWriter_DeathReport));
-
 	death_report->padding = 0u;
 	death_report->was_seen = false;
-	death_report->checksum = crc;
+	death_report->checksum = calculate_report_crc(death_report, sizeof(DeathReportWriter_DeathReport));
 
 	return true;
 }

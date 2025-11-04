@@ -29,7 +29,7 @@
 
 extern const Nvic_VectorTable exception_table;
 
-void __attribute__((noinline, noreturn, aligned(8))) Fault_HandlerTail(void)
+void __attribute__((noreturn)) Fault_HandlerTail(void)
 {
   DeathReportWriter_GenerateDeathReport();
 
