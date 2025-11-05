@@ -24,12 +24,17 @@
 #define CRC_POLYNOMIAL 0x1021
 #define CRC_MOST_SYGNIFICANT_BIT 0x8000
 
+extern uint32_t bsp_section_rtemsstack_end;
+
 static void save_stack(DeathReportWriter_DeathReport *const death_report)
 {
-	const uint32_t stack_size = DEATH_REPORT_STACK_TRACE_SIZE;
-	death_report->stack_trace_length =
-		stack_size <= DEATH_REPORT_STACK_TRACE_SIZE ? stack_size :
-								    stack_size;
+	if((bsp_section_rtemsstack_end - death_report->stack_trace_pointer) < DEATH_REPORT_STACK_TRACE_SIZE){
+		death_report->stack_trace_length = bsp_section_rtemsstack_end - death_report->stack_trace_pointer;
+	}
+	else{
+		death_report->stack_trace_length = DEATH_REPORT_STACK_TRACE_SIZE;
+	}
+
 	const uint32_t *const stack =
 		(const uint32_t *)death_report->stack_trace_pointer;
 	for (uint32_t i = 0; i < death_report->stack_trace_length; i++) {

@@ -25,7 +25,6 @@
 #include <Rstc/Rstc.h>
 #include <Nvic/Nvic.h>
 #include <Nvic/NvicVectorTable.h>
-#include <SamV71Core/SamV71Core.h>
 
 extern const Nvic_VectorTable exception_table;
 
