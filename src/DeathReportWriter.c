@@ -24,7 +24,8 @@
 #define CRC_POLYNOMIAL 0x1021
 #define CRC_MOST_SYGNIFICANT_BIT 0x8000
 
-extern uint32_t bsp_section_rtemsstack_end;
+extern const uint32_t bsp_section_rtemsstack_end;
+extern const uint32_t DEATH_REPORT_BEGIN;
 
 static void save_stack(DeathReportWriter_DeathReport *const death_report)
 {
@@ -79,11 +80,9 @@ bool DeathReportWriter_Init()
 
 bool DeathReportWriter_GenerateDeathReport()
 {
-	// SAMRH71 BSW boot report address
-	void *const boot_report = (void *)0x2045F968;
+	DeathReportWriter_DeathReport *const death_report = 
+		(DeathReportWriter_DeathReport *const)&DEATH_REPORT_BEGIN;
 
-	DeathReportWriter_DeathReport *const death_report =
-		boot_report + DEATH_REPORT_OFFSET;
 	save_stack(death_report);
 
 	death_report->padding = 0u;

@@ -63,8 +63,7 @@ void __attribute__((naked, aligned(8))) Fault_Handler()
 
 	// Move general purpose registers to DeathReport before they are overwritten.
 	asm volatile(
-		"ldr r0, BootReportSectionBegin\n"
-		"add r0, r0, %[DeathReportOffset]\n"
+		"ldr r0, DeathReportSectionBegin\n"
 		"mrs r1, ipsr\n" // Read IPSR.
 		"and r1, r1, 0x3F\n" // Extract Exception number.
 		"str r1, [r0, %[ExceptionIdOffset]]\n" // Save Exception number.
@@ -116,13 +115,12 @@ void __attribute__((naked, aligned(8))) Fault_Handler()
 		"str r3, [r0, %[SpOffset]]\n" // Save SP.
 		// Jump to the C code part of the handler. We are not coming back.
 		"b %[Tail]\n"
-		"BootReportSectionBegin: .word 0x2045F968\n"
-		"CfsrAddress:            .word 0xE000ED28\n"
-		"WdtCrAddr:              .word 0x40100250\n"
-		"WdtRstKey:              .word 0xA5000001\n"
+		"DeathReportSectionBegin: .word DEATH_REPORT_BEGIN\n"
+		"CfsrAddress:             .word 0xE000ED28\n"
+		"WdtCrAddr:               .word 0x40100250\n"
+		"WdtRstKey:               .word 0xA5000001\n"
 		:
-		: [DeathReportOffset] "i"(DEATH_REPORT_OFFSET),
-		  [ExceptionIdOffset] "i"(offsetof(
+		: [ExceptionIdOffset] "i"(offsetof(
 			  DeathReportWriter_DeathReport, exception_id)),
 		  [R0Offset] "i"(offsetof(DeathReportWriter_DeathReport,
 					  registers.r0)),

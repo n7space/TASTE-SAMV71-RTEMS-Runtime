@@ -29,11 +29,6 @@
 #include <stdint.h>
 
 /**
- * @brief   Death report offset in BSW Boot Report calucaled for SAMRH71
- */
-#define DEATH_REPORT_OFFSET 352
-
-/**
  * @brief   Death report stack trace size given in 4 bytes words
  */
 #define DEATH_REPORT_STACK_TRACE_SIZE 128
