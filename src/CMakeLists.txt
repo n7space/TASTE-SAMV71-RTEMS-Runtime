@@ -10,6 +10,7 @@ target_sources(Samv71Runtime
   ThreadsCommon.c
   FaultHandler.c
   DeathReportWriter.c
+  CustomExceptionVector.c
   PUBLIC      Hal.h
   Monitor.h
   ThreadsCommon.h

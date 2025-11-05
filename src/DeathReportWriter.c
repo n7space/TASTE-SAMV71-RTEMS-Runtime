@@ -28,11 +28,14 @@ extern uint32_t bsp_section_rtemsstack_end;
 
 static void save_stack(DeathReportWriter_DeathReport *const death_report)
 {
-	if((bsp_section_rtemsstack_end - death_report->stack_trace_pointer) < DEATH_REPORT_STACK_TRACE_SIZE){
-		death_report->stack_trace_length = bsp_section_rtemsstack_end - death_report->stack_trace_pointer;
-	}
-	else{
-		death_report->stack_trace_length = DEATH_REPORT_STACK_TRACE_SIZE;
+	if ((bsp_section_rtemsstack_end - death_report->stack_trace_pointer) <
+	    DEATH_REPORT_STACK_TRACE_SIZE) {
+		death_report->stack_trace_length =
+			bsp_section_rtemsstack_end -
+			death_report->stack_trace_pointer;
+	} else {
+		death_report->stack_trace_length =
+			DEATH_REPORT_STACK_TRACE_SIZE;
 	}
 
 	const uint32_t *const stack =
@@ -46,17 +49,17 @@ static uint16_t calculate_crc(const uint8_t *const data, const size_t length)
 {
 	uint16_t crc = CRC_INITIAL_VALUE;
 
-    for (int i = 0; i < length; i++) {
-        crc ^= (uint16_t)data[i] << 8;
-        for (int j = 0; j < 8; j++) {
-            if (crc & CRC_MOST_SYGNIFICANT_BIT)
-                crc = (crc << 1) ^ CRC_POLYNOMIAL;
-            else
-                crc <<= 1;
-        }
-    }
+	for (int i = 0; i < length; i++) {
+		crc ^= (uint16_t)data[i] << 8;
+		for (int j = 0; j < 8; j++) {
+			if (crc & CRC_MOST_SYGNIFICANT_BIT)
+				crc = (crc << 1) ^ CRC_POLYNOMIAL;
+			else
+				crc <<= 1;
+		}
+	}
 
-    return crc;
+	return crc;
 }
 
 static uint16_t calculate_report_crc(const void *const report,
@@ -77,7 +80,7 @@ bool DeathReportWriter_Init()
 bool DeathReportWriter_GenerateDeathReport()
 {
 	// SAMRH71 BSW boot report address
-	void *const boot_report = (void*)0x2045F968; 
+	void *const boot_report = (void *)0x2045F968;
 
 	DeathReportWriter_DeathReport *const death_report =
 		boot_report + DEATH_REPORT_OFFSET;
@@ -85,7 +88,8 @@ bool DeathReportWriter_GenerateDeathReport()
 
 	death_report->padding = 0u;
 	death_report->was_seen = false;
-	death_report->checksum = calculate_report_crc(death_report, sizeof(DeathReportWriter_DeathReport));
+	death_report->checksum = calculate_report_crc(
+		death_report, sizeof(DeathReportWriter_DeathReport));
 
 	return true;
 }
