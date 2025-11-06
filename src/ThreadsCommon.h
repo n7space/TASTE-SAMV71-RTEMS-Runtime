@@ -56,9 +56,9 @@ struct CyclicInterfaceEmptyRequestData {
  *                      successful
  */
 bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
-				       				   const uint64_t dispatch_offset_ns,
-				       				   const uint32_t queue_id,
-				       				   const uint32_t request_size);
+				       const uint64_t dispatch_offset_ns,
+				       const uint32_t queue_id,
+				       const uint32_t request_size);
 
 /**
  * @brief               Function is responsible for invoking the provided user
@@ -73,8 +73,10 @@ bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
  * @return              Bool indicating whether the request processing was
  *                      successful
  */
-bool ThreadsCommon_ProcessRequest(const void *const request_data, const uint32_t request_size,
-				  				  void *user_function, const uint32_t thread_id);
+bool ThreadsCommon_ProcessRequest(const void *const request_data,
+				  const uint32_t request_size,
+				  void *user_function,
+				  const uint32_t thread_id);
 
 /**
  * @brief               Function is responsible for putting a request in specific
@@ -88,7 +90,9 @@ bool ThreadsCommon_ProcessRequest(const void *const request_data, const uint32_t
  * @return              Bool indicating whether the request processing was
  *                      successful
  */
-bool ThreadsCommon_SendRequest(const void *const request_data, const uint32_t request_size,
-				  			   const uint32_t queue_id, const uint32_t thread_id);
+bool ThreadsCommon_SendRequest(const void *const request_data,
+			       const uint32_t request_size,
+			       const uint32_t queue_id,
+			       const uint32_t thread_id);
 
 #endif
