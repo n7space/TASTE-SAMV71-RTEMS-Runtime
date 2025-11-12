@@ -19,15 +19,17 @@
 
 #include <BrokerLock.h>
 
+#include <assert.h>
+
 #include <rtems.h>
 
 extern rtems_id broker_Semaphore;
 
 void Broker_acquire_lock()
 {
-	while (rtems_semaphore_obtain(broker_Semaphore, RTEMS_WAIT,
-				      RTEMS_NO_WAIT) != RTEMS_SUCCESSFUL)
-		;
+	const rtems_status_code result = rtems_semaphore_obtain(
+		broker_Semaphore, RTEMS_WAIT, RTEMS_NO_WAIT);
+	assert(result == RTEMS_SUCCESSFUL);
 }
 
 void Broker_release_lock()

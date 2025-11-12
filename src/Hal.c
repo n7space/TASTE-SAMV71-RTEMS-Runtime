@@ -171,11 +171,15 @@ int32_t Hal_SemaphoreCreate(void)
 
 bool Hal_SemaphoreObtain(int32_t id)
 {
-	return rtems_semaphore_obtain(id, RTEMS_WAIT, RTEMS_NO_TIMEOUT) ==
-	       RTEMS_SUCCESSFUL;
+	const rtems_status_code result =
+		rtems_semaphore_obtain(id, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
+	assert(result == RTEMS_SUCCESSFUL);
+	return TRUE;
 }
 
 bool Hal_SemaphoreRelease(int32_t id)
 {
-	return rtems_semaphore_release(id) == RTEMS_SUCCESSFUL;
+	const rtems_status_code result = rtems_semaphore_release(id);
+	assert(result == RTEMS_SUCCESSFUL);
+	return TRUE;
 }
