@@ -5,12 +5,11 @@ target_sources(SamV71Core
   PUBLIC
   SamV71Core.h)
 target_include_directories(SamV71Core
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(SamV71Core
-  PRIVATE
-  SAMV71::Pmc
-  SAMV71::Wdt
-  SAMV71::Tic)
+  PRIVATE SAMV71::Pmc
+          SAMV71::Wdt
+          SAMV71::Tic)
 
 add_format_target(SamV71Core)
 
