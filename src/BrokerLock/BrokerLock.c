@@ -28,7 +28,7 @@ extern rtems_id broker_Semaphore;
 void Broker_acquire_lock()
 {
 	const rtems_status_code result = rtems_semaphore_obtain(
-		broker_Semaphore, RTEMS_WAIT, RTEMS_NO_WAIT);
+		broker_Semaphore, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
 	assert(result == RTEMS_SUCCESSFUL);
 }
 
