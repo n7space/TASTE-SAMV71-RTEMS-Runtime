@@ -24,7 +24,7 @@ enum BootHelper_ResetReason BootHelper_GetResetReason()
 {
 	const Rstc_ResetType reset_type = Rstc_getLastResetType();
 
-	switch(reset_type){
+	switch (reset_type){
 		case Rstc_ResetType_Powerup:
 		{
 			return BootHelper_ResetReason_Powerup;
