@@ -31,8 +31,6 @@
 #define RT_MAX_CYCLIC_INTERFACES RUNTIME_THREAD_COUNT
 #endif
 
-#define NANOSECOND_IN_MILISECOND 1000000ULL
-
 extern rtems_name generate_new_partition_timer_name();
 static void schedule_next_tick(const uint32_t cyclic_request_data_index);
 static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index);
@@ -124,10 +122,10 @@ bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
 
 	cyclic_request_data[cyclic_requests_count].next_wakeup_ticks =
 		RTEMS_MILLISECONDS_TO_TICKS(dispatch_offset_ns /
-					    NANOSECOND_IN_MILISECOND);
+					    NANOSECONDS_IN_MILLISECOND);
 	cyclic_request_data[cyclic_requests_count].interval_ticks =
 		RTEMS_MILLISECONDS_TO_TICKS(interval_ns /
-					    NANOSECOND_IN_MILISECOND);
+					    NANOSECONDS_IN_MILLISECOND);
 	cyclic_request_data[cyclic_requests_count].queue_id = queue_id;
 	cyclic_request_data[cyclic_requests_count].request_size = request_size;
 
