@@ -179,3 +179,8 @@ bool Hal_SemaphoreRelease(int32_t id)
 {
 	return rtems_semaphore_release(id) == RTEMS_SUCCESSFUL;
 }
+
+enum Hal_ResetReason Hal_GetResetReason()
+{
+	return BootHelper_GetResetReason();
+}
