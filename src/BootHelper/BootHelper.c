@@ -24,30 +24,24 @@ enum BootHelper_ResetReason BootHelper_GetResetReason()
 {
 	const Rstc_ResetType reset_type = Rstc_getLastResetType();
 
-	switch (reset_type){
-		case Rstc_ResetType_Powerup:
-		{
-			return BootHelper_ResetReason_Powerup;
-		}
-		case Rstc_ResetType_Backup:
-		{
-			return BootHelper_ResetReason_Backup;
-		}
-		case Rstc_ResetType_Watchdog:
-		{
-			return BootHelper_ResetReason_Watchdog;
-		}
-		case Rstc_ResetType_Software:
-		{
-			return BootHelper_ResetReason_Software;
-		}
-		case Rstc_ResetType_User:
-		{
-			return BootHelper_ResetReason_User;
-		}
-		default:
-		{
-			return BootHelper_ResetReason_Unknown;
-		}
+	switch (reset_type) {
+	case Rstc_ResetType_Powerup: {
+		return BootHelper_ResetReason_Powerup;
+	}
+	case Rstc_ResetType_Backup: {
+		return BootHelper_ResetReason_Backup;
+	}
+	case Rstc_ResetType_Watchdog: {
+		return BootHelper_ResetReason_Watchdog;
+	}
+	case Rstc_ResetType_Software: {
+		return BootHelper_ResetReason_Software;
+	}
+	case Rstc_ResetType_User: {
+		return BootHelper_ResetReason_User;
+	}
+	default: {
+		return BootHelper_ResetReason_Unknown;
+	}
 	}
 }

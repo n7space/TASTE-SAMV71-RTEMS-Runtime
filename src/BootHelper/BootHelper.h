@@ -31,10 +31,10 @@
 enum BootHelper_ResetReason {
 	BootHelper_ResetReason_Unknown = 0,
 	BootHelper_ResetReason_Powerup = 1,
-    BootHelper_ResetReason_Backup = 2,
-    BootHelper_ResetReason_Watchdog = 3,
-    BootHelper_ResetReason_Software = 4,
-    BootHelper_ResetReason_User = 5
+	BootHelper_ResetReason_Backup = 2,
+	BootHelper_ResetReason_Watchdog = 3,
+	BootHelper_ResetReason_Software = 4,
+	BootHelper_ResetReason_User = 5
 };
 
 /**
