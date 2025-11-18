@@ -19,6 +19,7 @@
 
 #include "SamV71Core.h"
 
+#include "Utils/ErrorCode.h"
 #include <stdint.h>
 #include <Pmc/Pmc.h>
 
@@ -144,6 +145,71 @@ void SamV71Core_Init(void)
 {
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
 
+	const Pmc_Config pmcConfig = {
+	.mainck = {
+	  .src = Pmc_MainckSrc_RcOsc,
+	  .rcOscFreq = Pmc_RcOscFreq_12M,
+	  .xoscStartupTime = 0
+	},
+	.pll = {
+	  .pllaMul = 24,
+	  .pllaDiv = 1,
+	  .pllaStartupTime = 60
+	},
+	.masterck = {
+	  .src = Pmc_MasterckSrc_Pllack,
+	  .presc = Pmc_MasterckPresc_2,
+	  .divider = Pmc_MasterckDiv_2
+	},
+	.pck = {
+      {
+        .isEnabled = FALSE,
+        .src = Pmc_PckSrc_Slck,
+        .presc = 0,
+      },
+      {
+        .isEnabled = FALSE,
+        .src = Pmc_PckSrc_Slck,
+        .presc = 0,
+      },
+      {
+        .isEnabled = FALSE,
+        .src = Pmc_PckSrc_Slck,
+        .presc = 0,
+      },
+      {
+        .isEnabled = FALSE,
+        .src = Pmc_PckSrc_Slck,
+        .presc = 0,
+      },
+      {
+        .isEnabled = FALSE,
+        .src = Pmc_PckSrc_Slck,
+        .presc =0,
+      },
+      {
+        .isEnabled = FALSE,
+        .src = Pmc_PckSrc_Pllack,
+        .presc = 14,
+      },
+      {
+        .isEnabled = FALSE,
+        .src = Pmc_PckSrc_Slck,
+        .presc = 0,
+      },
+      {
+        .isEnabled = FALSE,
+        .src = Pmc_PckSrc_Slck,
+        .presc = 0,
+      },
+
+	},
+	};
+
+	ErrorCode errCode = ErrorCode_NoError;
+	const bool isSettingConfigSuccessful =
+		Pmc_setConfig(&pmc, &pmcConfig, 1000000u, &errCode);
+
 	extract_mck_frequency();
 }
 
@@ -171,4 +237,11 @@ rtems_name SamV71Core_GenerateNewSemaphoreName(void)
 {
 	static rtems_name name = rtems_build_name('C', 0, 0, 0);
 	return name++;
+}
+
+bool SamV71Core_SetPckConfig(const Pmc_PckId id,
+			     const Pmc_PckConfig *const config,
+			     const uint32_t timeout, ErrorCode *const errCode)
+{
+	return Pmc_setPckConfig(&pmc, id, config, timeout, errCode);
 }

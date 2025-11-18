@@ -86,4 +86,6 @@ bool Hal_SemaphoreObtain(int32_t id);
  */
 bool Hal_SemaphoreRelease(int32_t id);
 
+void *Hal_ResetWatchdog(uintptr_t ignored);
+
 #endif

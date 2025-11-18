@@ -56,6 +56,8 @@ rtems_name generate_new_hal_semaphore_name()
 	return name++;
 }
 
+static Wdt wdt;
+
 inline static void Init_setup_watchdog(void)
 {
 	const Wdt_Config wdtConfig = {
@@ -68,9 +70,18 @@ inline static void Init_setup_watchdog(void)
 		.isHaltedOnDebug = false,
 	};
 
-	Wdt wdt;
 	Wdt_init(&wdt);
+	Wdt_Config existingWdtConfig;
+	/* Wdt_getConfig(&wdt, &existingWdtConfig); */
+	/* assert(existingWdtConfig.isDisabled); */
 	Wdt_setConfig(&wdt, &wdtConfig);
+}
+
+void *Hal_ResetWatchdog(uintptr_t ignored)
+{
+	while (1) {
+		Wdt_reset(&wdt);
+	}
 }
 
 void timer_irq_handler()
