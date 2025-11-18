@@ -26,8 +26,10 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <rtems.h>
 #include <Pmc/PmcPeripheralId.h>
+#include <Pmc/Pmc.h>
 
 /**
  * @brief               Initialize SAMV71 Core module.
@@ -67,5 +69,9 @@ uint64_t SamV71Core_GetMainClockFrequency(void);
  * @return              Unique name for semaphore.
  */
 rtems_name SamV71Core_GenerateNewSemaphoreName(void);
+
+bool SamV71Core_SetPckConfig(const Pmc_PckId id,
+			     const Pmc_PckConfig *const config,
+			     const uint32_t timeout, ErrorCode *const errCode);
 
 #endif
