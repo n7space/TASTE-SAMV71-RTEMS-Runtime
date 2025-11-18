@@ -80,7 +80,7 @@ bool DeathReportWriter_Init()
 
 bool DeathReportWriter_GenerateDeathReport()
 {
-	DeathReportWriter_DeathReport *const death_report = 
+	DeathReportWriter_DeathReport *const death_report =
 		(DeathReportWriter_DeathReport *const)&DEATH_REPORT_BEGIN;
 
 	save_stack(death_report);

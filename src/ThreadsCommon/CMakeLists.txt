@@ -9,6 +9,7 @@ target_include_directories(SamV71ThreadsCommon
 target_link_libraries(SamV71ThreadsCommon
   PRIVATE
   SAMV71::Runtime::Hal
+  SAMV71::Runtime::Monitor
   SAMV71::Runtime::Mocks)
 
 add_format_target(SamV71ThreadsCommon)
