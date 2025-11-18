@@ -55,10 +55,10 @@ struct CyclicInterfaceEmptyRequestData {
  * @return              Bool indicating whether the creation was
  *                      successful
  */
-bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
-				       uint64_t dispatch_offset_ns,
-				       uint32_t queue_id,
-				       uint32_t request_size);
+bool ThreadsCommon_CreateCyclicRequest(const uint64_t interval_ns,
+				       const uint64_t dispatch_offset_ns,
+				       const uint32_t queue_id,
+				       const uint32_t request_size);
 
 /**
  * @brief               Function is responsible for invoking the provided user
@@ -73,7 +73,26 @@ bool ThreadsCommon_CreateCyclicRequest(uint64_t interval_ns,
  * @return              Bool indicating whether the request processing was
  *                      successful
  */
-bool ThreadsCommon_ProcessRequest(void *request_data, uint32_t request_size,
-				  void *user_function, uint32_t thread_id);
+bool ThreadsCommon_ProcessRequest(const void *const request_data,
+				  const uint32_t request_size,
+				  void *user_function,
+				  const uint32_t thread_id);
+
+/**
+ * @brief               Function is responsible for putting a request in specific
+ * 						rtems queue. It performs also queue analysis.
+ *
+ * @param[in] request_data   pointer to request data
+ * @param[in] request_size   size of the request data
+ * @param[in] queue_id  	 the id of queue in which the request will be placed
+ * @param[in] thread_id      used for queue analysis
+ *
+ * @return              Bool indicating whether the request processing was
+ *                      successful
+ */
+bool ThreadsCommon_SendRequest(const void *const request_data,
+			       const uint32_t request_size,
+			       const uint32_t queue_id,
+			       const uint32_t thread_id);
 
 #endif
