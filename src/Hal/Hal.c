@@ -35,7 +35,7 @@
 #include <Uart/Uart.h>
 #include <Utils/ErrorCode.h>
 #include <Wdt/Wdt.h>
-#include <SamV71Core/SamV71Core.h>
+#include <SamV71Core.h>
 
 #define NANOSECOND_IN_SECOND 1000000000.0
 #define TICKS_PER_RELOAD 65535ul
