@@ -20,28 +20,28 @@
 #include <BootHelper.h>
 #include <Rstc/Rstc.h>
 
-enum BootHelper_ResetReason BootHelper_GetResetReason()
+enum Reset_Reason BootHelper_GetResetReason()
 {
 	const Rstc_ResetType reset_type = Rstc_getLastResetType();
 
 	switch (reset_type) {
 	case Rstc_ResetType_Powerup: {
-		return BootHelper_ResetReason_Powerup;
+		return Reset_Reason_Powerup;
 	}
 	case Rstc_ResetType_Backup: {
-		return BootHelper_ResetReason_Backup;
+		return Reset_Reason_Backup;
 	}
 	case Rstc_ResetType_Watchdog: {
-		return BootHelper_ResetReason_Watchdog;
+		return Reset_Reason_Watchdog;
 	}
 	case Rstc_ResetType_Software: {
-		return BootHelper_ResetReason_Software;
+		return Reset_Reason_Software;
 	}
 	case Rstc_ResetType_User: {
-		return BootHelper_ResetReason_User;
+		return Reset_Reason_User;
 	}
 	default: {
-		return BootHelper_ResetReason_Unknown;
+		return Reset_Reason_Unknown;
 	}
 	}
 }

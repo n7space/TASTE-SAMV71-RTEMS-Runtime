@@ -28,13 +28,13 @@
 /**
  * @brief   Enum representing possible reasons of hardware reset
  */
-enum BootHelper_ResetReason {
-	BootHelper_ResetReason_Unknown = 0,
-	BootHelper_ResetReason_Powerup = 1,
-	BootHelper_ResetReason_Backup = 2,
-	BootHelper_ResetReason_Watchdog = 3,
-	BootHelper_ResetReason_Software = 4,
-	BootHelper_ResetReason_User = 5
+enum Reset_Reason {
+	Reset_Reason_Unknown = 0,
+	Reset_Reason_Powerup = 1,
+	Reset_Reason_Backup = 2,
+	Reset_Reason_Watchdog = 3,
+	Reset_Reason_Software = 4,
+	Reset_Reason_User = 5
 };
 
 /**
@@ -42,6 +42,6 @@ enum BootHelper_ResetReason {
  *
  * @return              Enum representing possible reasons of hardware reset
  */
-enum BootHelper_ResetReason BootHelper_GetResetReason();
+enum Reset_Reason BootHelper_GetResetReason();
 
 #endif

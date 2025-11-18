@@ -92,6 +92,6 @@ bool Hal_SemaphoreRelease(int32_t id);
  *
  * @return              Enum representing possible reasons of hardware reset
  */
-enum BootHelper_ResetReason Hal_GetResetReason();
+enum Reset_Reason Hal_GetResetReason();
 
 #endif
