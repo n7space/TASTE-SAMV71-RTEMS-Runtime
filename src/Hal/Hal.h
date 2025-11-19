@@ -27,6 +27,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <BootHelper.h>
 
 #ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
@@ -85,5 +86,12 @@ bool Hal_SemaphoreObtain(int32_t id);
  * @return              Bool indicating whether the release was successful
  */
 bool Hal_SemaphoreRelease(int32_t id);
+
+/**
+ * @brief               Returns information about reason of hardware reset
+ *
+ * @return              Enum representing possible reasons of hardware reset
+ */
+enum Reset_Reason Hal_GetResetReason();
 
 #endif
