@@ -28,7 +28,7 @@ extern const char _ISR_Stack_area_end[];
 
 void __attribute__((naked, aligned(8))) Fault_Handler();
 
-__attribute__((aligned(VECTOR_TABLE_ALIGNMENT)))
+__attribute__((section(".custom_vector"), aligned(VECTOR_TABLE_ALIGNMENT)))
 const Nvic_VectorTable exception_table = {
   // configure stack pointer using linker symbols
   .initialStackPointer = (void*)_ISR_Stack_area_end,
