@@ -52,6 +52,7 @@ MEMORY {
 SECTIONS {
 	.start : ALIGN_WITH_INPUT {
 		bsp_section_start_begin = .;
+		KEEP (*(.vector))
 		KEEP (*(.bsp_start_text))
 		KEEP (*(.bsp_start_data))
 		bsp_section_start_end = .;
@@ -281,11 +282,6 @@ SECTIONS {
 	bsp_section_vector_size = bsp_section_vector_end - bsp_section_vector_begin;
 	bsp_vector_table_begin = DEFINED (bsp_vector_table_in_start_section) ? bsp_section_start_begin : bsp_section_vector_begin;
 	bsp_vector_table_end = bsp_vector_table_begin + bsp_vector_table_size;
-
-	.custom_vector : ALIGN_WITH_INPUT {
-		KEEP (*(.custom_vector))
-		. = . + bsp_vector_table_size;
-	} > REGION_VECTOR AT > REGION_VECTOR
 
 	.fast_text : ALIGN_WITH_INPUT {
 		bsp_section_fast_text_begin = .;
