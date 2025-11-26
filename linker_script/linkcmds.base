@@ -25,7 +25,7 @@ STARTUP (start.o)
  * Global symbols that may be defined externally
  */
 
-bsp_vector_table_size = DEFINED (bsp_vector_table_size) ? bsp_vector_table_size : 332;
+bsp_vector_table_size = DEFINED (bsp_vector_table_size) ? bsp_vector_table_size : 384;
 
 bsp_section_xbarrier_align = DEFINED (bsp_section_xbarrier_align) ? bsp_section_xbarrier_align : 1;
 bsp_section_robarrier_align = DEFINED (bsp_section_robarrier_align) ? bsp_section_robarrier_align : 1;
