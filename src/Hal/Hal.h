@@ -27,6 +27,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <BootHelper.h>
 
 #ifndef RT_MAX_HAL_SEMAPHORES
 #define RT_MAX_HAL_SEMAPHORES 8
@@ -92,5 +93,12 @@ bool Hal_SemaphoreRelease(int32_t id);
  * @param[in] ignored   Param required by rtems_task_entry signature - no meaningful value passed.
  */
 void Hal_IdleTask(uintptr_t ignored);
+
+/**
+ * @brief               Returns information about reason of hardware reset
+ *
+ * @return              Enum representing possible reasons of hardware reset
+ */
+enum Reset_Reason Hal_GetResetReason();
 
 #endif

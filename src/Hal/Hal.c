@@ -230,3 +230,8 @@ void Hal_IdleTask(uintptr_t ignored)
 		Hal_ResetWatchdog();
 	}
 }
+
+enum Reset_Reason Hal_GetResetReason()
+{
+	return BootHelper_GetResetReason();
+}
