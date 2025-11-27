@@ -70,6 +70,16 @@ uint64_t SamV71Core_GetMainClockFrequency(void);
  */
 rtems_name SamV71Core_GenerateNewSemaphoreName(void);
 
+/**
+ * @brief               Set configuration of PCKx.
+ *
+ * @param[in] id        PCK identifier.
+ * @param[in] config    PCK configuration to set.
+ * @param[in] timeout   Timeout of operation.
+ * @param[out] errCode  ErrorCode pointer to write optional error code.
+
+ * @return              Boolean value indicating operation success.
+ */
 bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 			     const Pmc_PckConfig *const config,
 			     const uint32_t timeout, ErrorCode *const errCode);

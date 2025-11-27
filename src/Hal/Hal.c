@@ -47,8 +47,7 @@ static rtems_id hal_semaphore_ids[RT_MAX_HAL_SEMAPHORES];
 static ConcurrentAccessFlag reloads_modified_flag;
 static uint32_t reloads_counter;
 static Tic tic = {};
-
-rtems_name generate_new_hal_semaphore_name();
+static bool idleTaskIsWatchdogEnabled = false;
 
 rtems_name generate_new_hal_semaphore_name()
 {
@@ -60,6 +59,29 @@ static Wdt wdt;
 
 inline static void Init_setup_watchdog(void)
 {
+	Wdt_init(&wdt);
+#ifdef RT_RTOS_NO_INIT
+
+	Wdt_Config existingWdtConfig;
+	Wdt_getConfig(&wdt, &existingWdtConfig);
+	if (!existingWdtConfig.isDisabled) {
+		idleTaskIsWatchdogEnabled = true;
+	}
+#ifdef RT_RTOS_USE_WATCHDOG
+#error RT_RTOS_USE_WATCHDOG cannot be used when RT_RTOS_NO_INIT is defined
+#endif
+#else
+#ifdef RT_RTOS_USE_WATCHDOG
+	const Wdt_Config wdtConfig = {
+		.counterValue = 0x0FFF,
+		.deltaValue = 0x0FFF,
+		.isResetEnabled = true,
+		.isFaultInterruptEnabled = false,
+		.isDisabled = false,
+		.isHaltedOnIdle = false,
+		.isHaltedOnDebug = true,
+	};
+#else
 	const Wdt_Config wdtConfig = {
 		.counterValue = 0x0FFF,
 		.deltaValue = 0x0FFF,
@@ -67,21 +89,22 @@ inline static void Init_setup_watchdog(void)
 		.isFaultInterruptEnabled = false,
 		.isDisabled = true,
 		.isHaltedOnIdle = false,
-		.isHaltedOnDebug = false,
+		.isHaltedOnDebug = true,
 	};
-
-	Wdt_init(&wdt);
-	Wdt_Config existingWdtConfig;
-	/* Wdt_getConfig(&wdt, &existingWdtConfig); */
-	/* assert(existingWdtConfig.isDisabled); */
+#endif
 	Wdt_setConfig(&wdt, &wdtConfig);
+	Wdt_Config existingWdtConfig;
+	Wdt_getConfig(&wdt, &existingWdtConfig);
+	assert((existingWdtConfig.isDisabled == wdtConfig.isDisabled) &&
+	       "Unable to setup watchdog");
+	assert((existingWdtConfig.isResetEnabled == wdtConfig.isResetEnabled) &&
+	       "Unable to setup watchdog");
+#endif
 }
 
-void *Hal_ResetWatchdog(uintptr_t ignored)
+void Hal_ResetWatchdog()
 {
-	while (1) {
-		Wdt_reset(&wdt);
-	}
+	Wdt_reset(&wdt);
 }
 
 void timer_irq_handler()
@@ -199,4 +222,11 @@ bool Hal_SemaphoreRelease(int32_t id)
 
 	const rtems_status_code result = rtems_semaphore_release(id);
 	return result == RTEMS_SUCCESSFUL;
+}
+
+void Hal_IdleTask(uintptr_t ignored)
+{
+	while (1) {
+		Hal_ResetWatchdog();
+	}
 }

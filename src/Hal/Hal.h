@@ -86,6 +86,11 @@ bool Hal_SemaphoreObtain(int32_t id);
  */
 bool Hal_SemaphoreRelease(int32_t id);
 
-void *Hal_ResetWatchdog(uintptr_t ignored);
+/**
+ * @brief               Main function of IDLE task.
+ *
+ * @param[in] ignored   Param required by rtems_task_entry signature - no meaningful value passed.
+ */
+void Hal_IdleTask(uintptr_t ignored);
 
 #endif

@@ -145,6 +145,10 @@ void SamV71Core_Init(void)
 {
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
 
+#ifndef RT_RTOS_NO_INIT
+	// Configure RC Oscillator as source for main clock.
+	// Configure PLLA and master clock.
+	// This is default setting, unless RT_RTOS_NO_INIT is enabled.
 	const Pmc_Config pmcConfig = {
 	.mainck = {
 	  .src = Pmc_MainckSrc_RcOsc,
@@ -209,6 +213,8 @@ void SamV71Core_Init(void)
 	ErrorCode errCode = ErrorCode_NoError;
 	const bool isSettingConfigSuccessful =
 		Pmc_setConfig(&pmc, &pmcConfig, 1000000u, &errCode);
+
+#endif
 
 	extract_mck_frequency();
 }
