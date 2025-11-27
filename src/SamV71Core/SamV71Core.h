@@ -28,8 +28,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <rtems.h>
+
 #include <Pmc/PmcPeripheralId.h>
 #include <Pmc/Pmc.h>
+#include <Utils/ErrorCode.h>
 
 /**
  * @brief               Initialize SAMV71 Core module.
