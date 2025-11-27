@@ -25,7 +25,7 @@ STARTUP (start.o)
  * Global symbols that may be defined externally
  */
 
-bsp_vector_table_size = DEFINED (bsp_vector_table_size) ? bsp_vector_table_size : 64;
+bsp_vector_table_size = DEFINED (bsp_vector_table_size) ? bsp_vector_table_size : 384;
 
 bsp_section_xbarrier_align = DEFINED (bsp_section_xbarrier_align) ? bsp_section_xbarrier_align : 1;
 bsp_section_robarrier_align = DEFINED (bsp_section_robarrier_align) ? bsp_section_robarrier_align : 1;
@@ -45,8 +45,6 @@ bsp_stack_und_size = ALIGN (bsp_stack_und_size, bsp_stack_align);
 bsp_stack_hyp_size = DEFINED (bsp_stack_hyp_size) ? bsp_stack_hyp_size : 0;
 bsp_stack_hyp_size = ALIGN (bsp_stack_hyp_size, bsp_stack_align);
 
-DEATH_REPORT_BEGIN = 0x2045FAC8;
-
 MEMORY {
 	UNEXPECTED_SECTIONS : ORIGIN = 0xffffffff, LENGTH = 0
 }
@@ -54,6 +52,7 @@ MEMORY {
 SECTIONS {
 	.start : ALIGN_WITH_INPUT {
 		bsp_section_start_begin = .;
+		KEEP (*(.vector))
 		KEEP (*(.bsp_start_text))
 		KEEP (*(.bsp_start_data))
 		bsp_section_start_end = .;
