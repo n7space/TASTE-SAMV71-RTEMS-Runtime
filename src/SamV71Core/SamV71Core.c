@@ -19,8 +19,10 @@
 
 #include "SamV71Core.h"
 
-#include "Utils/ErrorCode.h"
 #include <stdint.h>
+#include <assert.h>
+
+#include "Utils/ErrorCode.h"
 #include <Pmc/Pmc.h>
 
 #define MEGA_HZ 1000000u
@@ -213,7 +215,7 @@ void SamV71Core_Init(void)
 	ErrorCode errCode = ErrorCode_NoError;
 	const bool isSettingConfigSuccessful =
 		Pmc_setConfig(&pmc, &pmcConfig, 1000000u, &errCode);
-
+	assert(isSettingConfigSuccessful && "Cannot configure PMC");
 #endif
 
 	extract_mck_frequency();
