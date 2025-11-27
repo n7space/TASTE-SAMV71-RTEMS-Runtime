@@ -16,6 +16,7 @@ target_link_libraries(SamV71Hal
               SAMV71::Runtime::Mocks
               SAMV71::Runtime::Xdmac
               SAMV71::Runtime::Core
+              SAMV71::Runtime::BootHelper
               SAMV71::Uart)
 
 add_format_target(SamV71Hal)
