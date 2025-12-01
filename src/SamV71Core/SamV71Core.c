@@ -24,6 +24,7 @@
 
 #include "Utils/ErrorCode.h"
 #include <Pmc/Pmc.h>
+#include <Mpu/Mpu.h>
 
 #define MEGA_HZ 1000000u
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
@@ -32,6 +33,7 @@
 
 // xdmad.c requires global pmc
 Pmc pmc;
+static Mpu mpu;
 static uint64_t mck_frequency = 0;
 
 static void extract_main_oscilator_frequency(void)
@@ -146,6 +148,11 @@ static void extract_mck_frequency(void)
 void SamV71Core_Init(void)
 {
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
+	Mpu_init(&mpu);
+	Mpu_Config mpuConf = { .isEnabled = true,
+			       .isDefaultMemoryMapEnabled = false,
+			       .isMpuEnabledInHandlers = true };
+	Mpu_setConfig(&mpu, &mpuConf);
 
 #ifndef RT_RTOS_NO_INIT
 	// Configure RC Oscillator as source for main clock.
@@ -247,9 +254,33 @@ rtems_name SamV71Core_GenerateNewSemaphoreName(void)
 	return name++;
 }
 
+rtems_name SamV71Core_GenerateNewTaskName(void)
+{
+	static rtems_name name = rtems_build_name('D', 0, 0, 0);
+	return name++;
+}
+
 bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 			     const Pmc_PckConfig *const config,
 			     const uint32_t timeout, ErrorCode *const errCode)
 {
 	return Pmc_setPckConfig(&pmc, id, config, timeout, errCode);
+}
+
+void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeDeterminant)
+{
+	Mpu_RegionConfig mpuRegionConf = {
+		.address = (uint32_t)address,
+		.isEnabled = true,
+		.size = sizeDeterminant,
+		.subregionDisableMask = 0x00,
+		.isShareable = true,
+		.isExecutable = true,
+		.memoryType = Mpu_RegionMemoryType_StronglyOrdered,
+		.innerCachePolicy = Mpu_RegionCachePolicy_NonCacheable,
+		.outerCachePolicy = Mpu_RegionCachePolicy_NonCacheable,
+		.privilegedAccess = Mpu_RegionAccess_ReadWrite,
+		.unprivilegedAccess = Mpu_RegionAccess_ReadWrite,
+	};
+	Mpu_setRegionConfig(&mpu, 0, &mpuRegionConf);
 }

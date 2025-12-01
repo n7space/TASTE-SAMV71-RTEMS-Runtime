@@ -73,6 +73,13 @@ uint64_t SamV71Core_GetMainClockFrequency(void);
 rtems_name SamV71Core_GenerateNewSemaphoreName(void);
 
 /**
+ * @brief               Generate new unique name for task
+ *
+ * @return              Unique name for semaphore.
+ */
+rtems_name SamV71Core_GenerateNewTaskName(void);
+
+/**
  * @brief               Set configuration of PCKx.
  *
  * @param[in] id        PCK identifier.
@@ -85,5 +92,13 @@ rtems_name SamV71Core_GenerateNewSemaphoreName(void);
 bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 			     const Pmc_PckConfig *const config,
 			     const uint32_t timeout, ErrorCode *const errCode);
+
+/**
+ * @brief               Disable data cache for given memory region
+ *
+ * @param[in] address   Region address.
+ * @param[in] sizeDeterminant    Establishes size of the region as 2**(sizeDeterminant + 1)
+ */
+void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeDeterminant);
 
 #endif
