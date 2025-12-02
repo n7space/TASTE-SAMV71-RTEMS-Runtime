@@ -269,6 +269,7 @@ bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 
 void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeDeterminant)
 {
+	static uint8_t region = 8; // start from region 8
 	Mpu_RegionConfig mpuRegionConf = {
 		.address = (uint32_t)address,
 		.isEnabled = true,
@@ -282,5 +283,6 @@ void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeDeterminant)
 		.privilegedAccess = Mpu_RegionAccess_ReadWrite,
 		.unprivilegedAccess = Mpu_RegionAccess_ReadWrite,
 	};
-	Mpu_setRegionConfig(&mpu, 8, &mpuRegionConf);
+	Mpu_setRegionConfig(&mpu, region, &mpuRegionConf);
+	++region; // increase region, so next call will define a new one
 }
