@@ -150,7 +150,7 @@ void SamV71Core_Init(void)
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
 	Mpu_init(&mpu);
 	Mpu_Config mpuConf = { .isEnabled = true,
-			       .isDefaultMemoryMapEnabled = false,
+			       .isDefaultMemoryMapEnabled = true,
 			       .isMpuEnabledInHandlers = true };
 	Mpu_setConfig(&mpu, &mpuConf);
 
@@ -282,5 +282,5 @@ void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeDeterminant)
 		.privilegedAccess = Mpu_RegionAccess_ReadWrite,
 		.unprivilegedAccess = Mpu_RegionAccess_ReadWrite,
 	};
-	Mpu_setRegionConfig(&mpu, 0, &mpuRegionConf);
+	Mpu_setRegionConfig(&mpu, 8, &mpuRegionConf);
 }
