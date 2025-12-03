@@ -24,6 +24,7 @@
 
 #include "Utils/ErrorCode.h"
 #include <Pmc/Pmc.h>
+#include <Mpu/Mpu.h>
 
 #define MEGA_HZ 1000000u
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
@@ -32,6 +33,7 @@
 
 // xdmad.c requires global pmc
 Pmc pmc;
+static Mpu mpu;
 static uint64_t mck_frequency = 0;
 
 static void extract_main_oscilator_frequency(void)
@@ -146,6 +148,11 @@ static void extract_mck_frequency(void)
 void SamV71Core_Init(void)
 {
 	Pmc_init(&pmc, Pmc_getDeviceRegisterStartAddress());
+	Mpu_init(&mpu);
+	Mpu_Config mpuConf = { .isEnabled = true,
+			       .isDefaultMemoryMapEnabled = true,
+			       .isMpuEnabledInHandlers = true };
+	Mpu_setConfig(&mpu, &mpuConf);
 
 #ifndef RT_RTOS_NO_INIT
 	// Configure RC Oscillator as source for main clock.
@@ -247,9 +254,47 @@ rtems_name SamV71Core_GenerateNewSemaphoreName(void)
 	return name++;
 }
 
+rtems_name SamV71Core_GenerateNewTaskName(void)
+{
+	static rtems_name name = rtems_build_name('D', 0, 0, 0);
+	return name++;
+}
+
 bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 			     const Pmc_PckConfig *const config,
 			     const uint32_t timeout, ErrorCode *const errCode)
 {
 	return Pmc_setPckConfig(&pmc, id, config, timeout, errCode);
+}
+
+void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
+{
+	assert(((uint32_t)address & (~MPU_RBAR_ADDR_MASK)) ==
+	       0); // verify proper alignment of address
+	assert(sizeExponent >= 4); // exponents less than 4 are reserved
+	assert(sizeExponent <= 31);
+	; // maximum exponent is 31 which defines 4GB region size
+
+	// The Mpu allows to define 16 regions, where the higher region number has
+	// higher priority. Regions can overlap, therefore the small regions with
+	// disabled cache shall have higher priority. The default memory map defines
+	// 11 regions, from 0 to 11 so these region shall be left intact.
+	static uint8_t region = 15; // start from with highest priority
+	assert(region >
+	       11); // verify if region does not overwrite default memory map
+	Mpu_RegionConfig mpuRegionConf = {
+		.address = (uint32_t)address,
+		.isEnabled = true,
+		.size = sizeExponent,
+		.subregionDisableMask = 0x00,
+		.isShareable = true,
+		.isExecutable = true,
+		.memoryType = Mpu_RegionMemoryType_StronglyOrdered,
+		.innerCachePolicy = Mpu_RegionCachePolicy_NonCacheable,
+		.outerCachePolicy = Mpu_RegionCachePolicy_NonCacheable,
+		.privilegedAccess = Mpu_RegionAccess_ReadWrite,
+		.unprivilegedAccess = Mpu_RegionAccess_ReadWrite,
+	};
+	Mpu_setRegionConfig(&mpu, region, &mpuRegionConf);
+	--region; // decrease region number, so next call will define a new one
 }
