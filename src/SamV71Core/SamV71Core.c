@@ -274,7 +274,14 @@ void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
 	assert(sizeExponent >= 4); // exponents less than 4 are reserved
 	assert(sizeExponent <= 31);
 	; // maximum exponent is 31 which defines 4GB region size
+
+	// The Mpu allows to define 16 regions, where the higher region number has
+	// higher priority. Regions can overlap, therefore the small regions with
+	// disabled cache shall have higher priority. The default memory map defines
+	// 11 regions, from 0 to 11 so these region shall be left intact.
 	static uint8_t region = 15; // start from with highest priority
+	assert(region >
+	       11); // verify if region does not overwrite default memory map
 	Mpu_RegionConfig mpuRegionConf = {
 		.address = (uint32_t)address,
 		.isEnabled = true,
