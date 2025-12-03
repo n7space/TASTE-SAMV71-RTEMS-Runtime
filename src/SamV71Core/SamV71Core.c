@@ -267,13 +267,18 @@ bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 	return Pmc_setPckConfig(&pmc, id, config, timeout, errCode);
 }
 
-void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeDeterminant)
+void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeExponent)
 {
-	static uint8_t region = 8; // start from region 8
+	assert(((uint32_t)address & (~MPU_RBAR_ADDR_MASK)) ==
+	       0); // verify proper alignment of address
+	assert(sizeExponent >= 4); // exponents less than 4 are reserved
+	assert(sizeExponent <= 31);
+	; // maximum exponent is 31 which defines 4GB region size
+	static uint8_t region = 15; // start from with highest priority
 	Mpu_RegionConfig mpuRegionConf = {
 		.address = (uint32_t)address,
 		.isEnabled = true,
-		.size = sizeDeterminant,
+		.size = sizeExponent,
 		.subregionDisableMask = 0x00,
 		.isShareable = true,
 		.isExecutable = true,
@@ -284,5 +289,5 @@ void SamV71Core_DisableDataCacheInRegion(void *address, size_t sizeDeterminant)
 		.unprivilegedAccess = Mpu_RegionAccess_ReadWrite,
 	};
 	Mpu_setRegionConfig(&mpu, region, &mpuRegionConf);
-	++region; // increase region, so next call will define a new one
+	--region; // decrease region number, so next call will define a new one
 }
