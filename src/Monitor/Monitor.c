@@ -26,11 +26,13 @@
 #define RT_EXEC_LOG_SIZE 0
 #endif
 
-#if RT_EXEC_LOG_SIZE <= 0
 static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
-#else
+
+#if RT_EXEC_LOG_SIZE <= 0
+static struct Monitor_InterfaceActivationEntry *default_activation_log_buffer = NULL;
+#elif defined  
 static struct Monitor_InterfaceActivationEntry
-	activation_log_buffer[RT_EXEC_LOG_SIZE];
+	default_activation_log_buffer[RT_EXEC_LOG_SIZE];
 #endif
 
 #define STACK_BYTE_PATTERN (uint32_t)0xA5A5A5A5
@@ -181,6 +183,13 @@ static bool thread_stack_usage_visitor(Thread_Control *the_thread, void *arg)
 
 bool Monitor_Init()
 {
+	if((uintptr_t)&ACTIVATION_LOG_DATA != 0){
+		activation_log_buffer = (struct Monitor_InterfaceActivationEntry *)&ACTIVATION_LOG_DATA;
+	}
+	else{
+		activation_log_buffer = default_activation_log_buffer;
+	}
+
 	_Timestamp_Set_to_zero(&total_usage_time);
 	rtems_cpu_usage_reset();
 	_TOD_Get_uptime(&uptime_at_last_reset);
