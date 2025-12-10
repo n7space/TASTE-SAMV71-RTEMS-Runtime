@@ -383,6 +383,13 @@ SECTIONS {
 	bsp_section_nocacheheap_size = bsp_section_nocacheheap_end - bsp_section_nocacheheap_begin;
 	bsp_section_nocachenoload_size = bsp_section_nocachenoload_end - bsp_section_nocachenoload_begin;
 
+	.logsection :
+  	{
+    	log_buffer_start = ABSOLUTE(.);
+    	. += LENGTH(LOG);
+    	log_buffer_end = ABSOLUTE(.);
+  	} > LOG
+
 	/* FIXME */
 	RamBase = ORIGIN (REGION_WORK);
 	RamSize = LENGTH (REGION_WORK);
