@@ -32,7 +32,7 @@ static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
 
 #if RT_EXEC_LOG_SIZE <= 0
 static struct Monitor_InterfaceActivationEntry *default_activation_log_buffer = NULL;
-#elif defined  
+#elif
 static struct Monitor_InterfaceActivationEntry
 	default_activation_log_buffer[RT_EXEC_LOG_SIZE];
 #endif
