@@ -26,6 +26,8 @@
 #define RT_EXEC_LOG_SIZE 0
 #endif
 
+extern const uint32_t ACTIVATION_LOG_DATA;
+
 static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
 
 #if RT_EXEC_LOG_SIZE <= 0
