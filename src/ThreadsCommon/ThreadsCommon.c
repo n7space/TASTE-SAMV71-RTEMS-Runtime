@@ -141,9 +141,13 @@ bool ThreadsCommon_ProcessRequest(const void *const request_data,
 {
 	call_function cast_user_function = (call_function)user_function;
 
+	Monitor_IndicateInterfaceActivated((const enum interfaces_enum)thread_id);
+
 	const uint64_t time_before_execution = Hal_GetElapsedTimeInNs();
 	cast_user_function((const char *)request_data, request_size);
 	const uint64_t time_after_execution = Hal_GetElapsedTimeInNs();
+
+	Monitor_IndicateInterfaceDeactivated((const enum interfaces_enum)thread_id);
 
 	threads_info[thread_id].thread_execution_time =
 		time_after_execution - time_before_execution;

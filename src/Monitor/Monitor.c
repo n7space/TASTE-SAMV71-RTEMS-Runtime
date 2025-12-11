@@ -22,21 +22,25 @@
 #include <string.h>
 #include <rtems/score/cpu.h>
 
-#ifndef RT_EXEC_LOG_SIZE
-#define RT_EXEC_LOG_SIZE 0
-#endif
+#ifdef RT_EXEC_LOG_ACTIVE
+#define RT_EXEC_LOG_BUFFER_ALIGNMENT 4
 
-#if RT_EXEC_LOG_SIZE <= 0
-static struct Monitor_InterfaceActivationEntry *activation_log_buffer = NULL;
-#else
-static struct Monitor_InterfaceActivationEntry
-	activation_log_buffer[RT_EXEC_LOG_SIZE];
+extern const uint32_t log_buffer_start;
+extern const uint32_t log_buffer_end;
+
+#define RT_EXEC_LOG_BUFFER_SIZE \
+    (((uint32_t)&log_buffer_end - (uint32_t)&log_buffer_start) \
+    / sizeof(struct Monitor_InterfaceActivationEntry))
+
+static volatile bool is_frozen = true;
+static uint64_t activation_entry_counter = 0;
+
+__attribute__((section(".logsection"), aligned(RT_EXEC_LOG_BUFFER_ALIGNMENT)))
+static struct Monitor_InterfaceActivationEntry *const activation_log_buffer = 
+	(struct Monitor_InterfaceActivationEntry *const)&log_buffer_start;
 #endif
 
 #define STACK_BYTE_PATTERN (uint32_t)0xA5A5A5A5
-
-static volatile bool is_frozen = true;
-static uint32_t activation_entry_counter = 0;
 
 static uint32_t benchmarking_ticks = 0;
 static Timestamp_Control uptime_at_last_reset = 0;
@@ -55,18 +59,18 @@ static bool
 handle_activation_log_cyclic_buffer(const enum interfaces_enum interface,
 				    const enum Monitor_EntryType entry_type)
 {
-#if RT_EXEC_LOG_SIZE <= 0
+#ifndef RT_EXEC_LOG_ACTIVE
 	return false;
 #else
 	if (is_frozen) {
 		return false;
 	}
 
-	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE]
+	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_BUFFER_SIZE]
 		.interface = interface;
-	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE]
+	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_BUFFER_SIZE]
 		.entry_type = entry_type;
-	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_SIZE]
+	activation_log_buffer[activation_entry_counter % RT_EXEC_LOG_BUFFER_SIZE]
 		.timestamp = Hal_GetElapsedTimeInNs();
 	activation_entry_counter++;
 
@@ -284,7 +288,7 @@ bool Monitor_GetInterfaceActivationEntryLog(
 	uint32_t *out_latest_activation_entry_index,
 	uint32_t *out_size_of_activation_log)
 {
-#if RT_EXEC_LOG_SIZE <= 0
+#ifndef RT_EXEC_LOG_ACTIVE
 	return false;
 #else
 	*activation_log = activation_log_buffer;
@@ -294,10 +298,10 @@ bool Monitor_GetInterfaceActivationEntryLog(
 		*out_size_of_activation_log = 0;
 	} else {
 		*out_latest_activation_entry_index =
-			(activation_entry_counter % RT_EXEC_LOG_SIZE) - 1;
+			(activation_entry_counter % RT_EXEC_LOG_BUFFER_SIZE) - 1;
 
-		if (activation_entry_counter > RT_EXEC_LOG_SIZE) {
-			*out_size_of_activation_log = RT_EXEC_LOG_SIZE;
+		if (activation_entry_counter > RT_EXEC_LOG_BUFFER_SIZE) {
+			*out_size_of_activation_log = RT_EXEC_LOG_BUFFER_SIZE;
 		} else {
 			*out_size_of_activation_log = activation_entry_counter;
 		}
@@ -309,33 +313,45 @@ bool Monitor_GetInterfaceActivationEntryLog(
 
 bool Monitor_FreezeInterfaceActivationLogging()
 {
-	if (RT_EXEC_LOG_SIZE <= 0) {
+#ifndef RT_EXEC_LOG_ACTIVE
+	return false;
+#else
+	if (RT_EXEC_LOG_BUFFER_SIZE <= 0) {
 		return false;
 	}
 
 	is_frozen = true;
 
 	return true;
+#endif
 }
 
 bool Monitor_UnfreezeInterfaceActivationLogging()
 {
-	if (RT_EXEC_LOG_SIZE <= 0) {
+#ifndef RT_EXEC_LOG_ACTIVE
+	return false;
+#else
+	if (RT_EXEC_LOG_BUFFER_SIZE <= 0) {
 		return false;
 	}
 
 	is_frozen = false;
 
 	return true;
+#endif
 }
 
 bool Monitor_ClearInterfaceActivationLog()
 {
-	if (RT_EXEC_LOG_SIZE <= 0) {
+#ifndef RT_EXEC_LOG_ACTIVE
+	return false;
+#else
+	if (RT_EXEC_LOG_BUFFER_SIZE <= 0) {
 		return false;
 	}
 
 	activation_entry_counter = 0;
 
 	return true;
+#endif
 }
