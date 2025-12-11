@@ -29,11 +29,11 @@ extern const uint32_t log_buffer_start;
 extern const uint32_t log_buffer_end;
 
 #define RT_EXEC_LOG_BUFFER_SIZE \
-    ((uint32_t)&log_buffer_end - (uint32_t)&log_buffer_start) \
-    / sizeof(struct Monitor_InterfaceActivationEntry)
+    (((uint32_t)&log_buffer_end - (uint32_t)&log_buffer_start) \
+    / sizeof(struct Monitor_InterfaceActivationEntry))
 
 static volatile bool is_frozen = true;
-static uint32_t activation_entry_counter = 0;
+static uint64_t activation_entry_counter = 0;
 
 __attribute__((section(".logsection"), aligned(RT_EXEC_LOG_BUFFER_ALIGNMENT)))
 static struct Monitor_InterfaceActivationEntry *const activation_log_buffer = 
