@@ -33,6 +33,9 @@
 #ifndef MAIN_CRYSTAL_OSCILLATOR_FREQUENCY
 #define MAIN_CRYSTAL_OSCILLATOR_FREQUENCY (12 * MEGA_HZ)
 #endif
+#ifndef EXTERNAL_CRYSTAL_OSCILLATOR_FREQUENCY
+#define EXTERNAL_CRYSTAL_OSCILLATOR_FREQUENCY (10 * MEGA_HZ)
+#endif
 
 extern void setCoreClockFrequency(uint64_t frequency);
 
@@ -48,6 +51,10 @@ static uint64_t extract_main_oscillator_frequency(void)
 
 	if (main_clock_config.src == Pmc_MainckSrc_XOsc) {
 		return MAIN_CRYSTAL_OSCILLATOR_FREQUENCY;
+	}
+
+	if (main_clock_config.src == Pmc_MainckSrc_XOscBypassed) {
+		return EXTERNAL_CRYSTAL_OSCILLATOR_FREQUENCY;
 	}
 
 	switch (main_clock_config.rcOscFreq) {
