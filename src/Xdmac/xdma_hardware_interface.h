@@ -38,12 +38,14 @@
  *        Types
  *----------------------------------------------------------------------------*/
 
-/** DMA hardware interface */
+/**
+ * @brief Maps one peripheral and transfer direction to an XDMAC handshake interface.
+ */
 typedef struct _XdmaHardwareInterface {
-	uint8_t bXdmac; /**< DMA Controller number */
-	uint32_t bPeriphID; /**< Peripheral ID */
-	uint8_t bTransfer; /**< Transfer type 0: Tx, 1 :Rx*/
-	uint8_t bIfID; /**< DMA Interface ID */
+	uint8_t bXdmac; /**< DMA controller number. */
+	uint32_t bPeriphID; /**< Peripheral identifier. */
+	uint8_t bTransfer; /**< Transfer type: 0 for Tx, 1 for Rx. */
+	uint8_t bIfID; /**< Hardware handshake interface identifier. */
 } XdmaHardwareInterface;
 
 /*----------------------------------------------------------------------------

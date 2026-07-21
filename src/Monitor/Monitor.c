@@ -85,6 +85,7 @@ handle_activation_log_cyclic_buffer(const enum interfaces_enum interface,
 static bool cpu_usage_visitor(Thread_Control *the_thread, void *arg)
 {
 	(void)arg;
+	// Refresh idle-thread CPU usage statistics from RTEMS accounting data.
 	float usage_percent;
 	uint32_t integer_val;
 	uint32_t float_val;
@@ -191,6 +192,7 @@ static bool thread_stack_usage_visitor(Thread_Control *the_thread, void *arg)
 
 bool Monitor_Init()
 {
+	// Reset monitoring baselines before runtime execution starts.
 	_Timestamp_Set_to_zero(&total_usage_time);
 	rtems_cpu_usage_reset();
 	_TOD_Get_uptime(&uptime_at_last_reset);

@@ -30,6 +30,8 @@ void __attribute__((naked, aligned(8))) Fault_Handler();
 
 __attribute__((section(".vector"), aligned(VECTOR_TABLE_ALIGNMENT)))
 const Nvic_VectorTable exception_table = {
+  // Route fatal exceptions to the custom fault handler and normal IRQs to RTEMS.
+
   // configure stack pointer using linker symbols
   .initialStackPointer = (void*)_ISR_Stack_area_end,
 

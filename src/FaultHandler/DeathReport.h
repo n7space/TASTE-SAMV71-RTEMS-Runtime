@@ -44,22 +44,24 @@
  *          tailoring, so it's left for the user to define that in Makefile.
 */
 #ifndef DEATH_REPORT_RESERVED_BYTES
-// Default value is set for default set of self-tests on SAMV71 build
+// Default value matches the default self-test layout for the SAMV71 build.
 #define DEATH_REPORT_RESERVED_BYTES 35
 #endif
 
 /**
  * @brief Structure representing DeathReport.
+ *
+ * The report layout is packed to match the boot software checksum format.
  */
 typedef struct __attribute__((packed, aligned(sizeof(uint32_t)))) {
 	uint16_t checksum; // Report checksum.
-	bool was_seen; // Death report was seen by BSW.
-	uint8_t padding; // Padding.
-	uint32_t exception_id; // Id of the called exception.
+	bool was_seen; // Set by the boot software after the report is consumed.
+	uint8_t padding; // Alignment padding.
+	uint32_t exception_id; // Faulting exception ID.
 
 	/**
-   * @brief Structure holding registers values.
-   */
+	 * @brief Structure holding register values captured at the fault point.
+	 */
 	struct __attribute__((packed)) {
 		uint32_t r0; // R0 register copy.
 		uint32_t r1; // R1 register copy.
@@ -86,8 +88,8 @@ typedef struct __attribute__((packed, aligned(sizeof(uint32_t)))) {
 	} registers; // Registers copy.
 
 	/**
-   * @brief Structure holding SCB registers.
-   */
+	 * @brief System Control Block status copied into the report.
+	 */
 	struct __attribute__((packed)) {
 		uint32_t cfsr; // Configurable Fault Status Register copy.
 		uint32_t hfsr; // HardFault Status Register copy.
@@ -97,6 +99,7 @@ typedef struct __attribute__((packed, aligned(sizeof(uint32_t)))) {
 
 	uint32_t stack_trace_pointer; // Saved stack trace pointer.
 	uint32_t stack_trace_length; // Saved stack trace length.
+	// Stack words are copied verbatim so post-mortem tooling can reconstruct the fault context.
 	uint32_t stack_trace[DEATH_REPORT_STACK_TRACE_SIZE];
 #if DEATH_REPORT_RESERVED_BYTES > 0
 	uint8_t _reserved[DEATH_REPORT_RESERVED_BYTES];

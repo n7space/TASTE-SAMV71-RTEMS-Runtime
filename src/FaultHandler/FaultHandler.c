@@ -30,6 +30,7 @@ extern const Nvic_VectorTable exception_table;
 
 void __attribute__((noreturn)) Fault_HandlerTail(void)
 {
+	// Write the fault report, flush caches, and force a system reset.
 	DeathReportWriter_GenerateDeathReport();
 
 	(void)Scb_cleanDCache();
@@ -184,6 +185,7 @@ bool FaultHandler_Init()
 	static volatile Scb_Registers *const scb =
 		(volatile Scb_Registers *)SCB_BASE_ADDRESS;
 
+	// Enable the fault paths that must be captured by the custom handler.
 	scb->shcsr = scb->shcsr | SCB_SHCSR_USGFAULTENA_MASK;
 	scb->ccr |= SCB_CCR_DIV_0_TRP_MASK;
 

@@ -47,6 +47,10 @@
  *@{
  */
 
+/** \brief The helpers below provide direct register accessors and simple channel control
+ * wrappers for the XDMAC peripheral.
+ */
+
 /*----------------------------------------------------------------------------
  *        Exported functions
  *----------------------------------------------------------------------------*/

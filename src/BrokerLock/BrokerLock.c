@@ -27,6 +27,7 @@ extern rtems_id broker_Semaphore;
 
 void Broker_acquire_lock()
 {
+	// Serialize broker access through the shared RTEMS semaphore.
 	const rtems_status_code result = rtems_semaphore_obtain(
 		broker_Semaphore, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
 	assert(result == RTEMS_SUCCESSFUL);
@@ -34,5 +35,6 @@ void Broker_acquire_lock()
 
 void Broker_release_lock()
 {
+	// Release the semaphore once the broker-critical section is done.
 	rtems_semaphore_release(broker_Semaphore);
 }

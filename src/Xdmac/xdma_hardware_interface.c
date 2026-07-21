@@ -54,7 +54,9 @@
 /*----------------------------------------------------------------------------
  *        Local variables
  *----------------------------------------------------------------------------*/
-/** Array of DMA Channel definition for SAMv7 chip*/
+/** Array of DMA Channel definition for SAMv7 chip
+ *
+ * Map each supported peripheral to its XDMAC hardware handshake interface. */
 static const XdmaHardwareInterface xdmaHwIf[] = {
 	/* xdmac, peripheral,  T/R, HW interface number*/
 	{ 0, Pmc_PeripheralId_Hsmci, 0, 0 },

@@ -22,7 +22,7 @@
 
 /**
  * @file    SamV71Core.h
- * @brief   Core functions for Samv71 MCU.
+ * @brief   Core functions for the SAMV71 MCU.
  */
 
 #include <stdint.h>
@@ -34,7 +34,7 @@
 #include <Utils/ErrorCode.h>
 
 /**
- * @brief               Initialize SAMV71 Core module.
+ * @brief Initialize the SAMV71 core helper module.
  */
 void SamV71Core_Init(void);
 
@@ -52,49 +52,49 @@ void SamV71Core_InterruptSubscribe(const rtems_vector_number vector,
 				   void *handler_arg);
 
 /**
- * @brief               Enable peripheral clock.
+ * @brief Enable the clock for a peripheral.
  *
- * @param[in] peripheralId clock identifier.
+ * @param[in] peripheralId Peripheral identifier.
  */
 void SamV71Core_EnablePeripheralClock(const Pmc_PeripheralId peripheralId);
 
 /**
- * @brief               Get frequency of main clock.
+ * @brief Get the main clock frequency in hertz.
  *
- * @return              Main clock frequency in Hz.
+ * @return Main clock frequency in Hz.
  */
 uint64_t SamV71Core_GetMainClockFrequency(void);
 
 /**
- * @brief               Generate new unique name for semaphore.
+ * @brief               Generate a new unique name for semaphore.
  *
- * @return              Unique name for semaphore.
+ * @return Unique RTEMS semaphore name.
  */
 rtems_name SamV71Core_GenerateNewSemaphoreName(void);
 
 /**
- * @brief               Generate new unique name for task
+ * @brief               Generate a new unique name for task
  *
- * @return              Unique name for task.
+ * @return Unique RTEMS task name.
  */
 rtems_name SamV71Core_GenerateNewTaskName(void);
 
 /**
- * @brief               Set configuration of PCKx.
+ * @brief Configure a programmable clock (PCKx) output.
  *
  * @param[in] id        PCK identifier.
- * @param[in] config    PCK configuration to set.
- * @param[in] timeout   Timeout of operation.
- * @param[out] errCode  ErrorCode pointer to write optional error code.
-
- * @return              Boolean value indicating operation success.
+ * @param[in] config    Configuration to apply.
+ * @param[in] timeout   Timeout for the operation.
+ * @param[out] errCode  Optional error code output.
+ *
+ * @return True on success.
  */
 bool SamV71Core_SetPckConfig(const Pmc_PckId id,
 			     const Pmc_PckConfig *const config,
 			     const uint32_t timeout, ErrorCode *const errCode);
 
 /**
- * @brief               Disable data cache for given memory region.
+ * @brief Disable the data cache for a memory region.
  *
  *                      This function is not thread-safe.
  *

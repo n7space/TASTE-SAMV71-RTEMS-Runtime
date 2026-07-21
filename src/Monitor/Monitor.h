@@ -36,10 +36,10 @@
 #include <stdlib.h>
 
 /**
- * @brief   Struct representing usage and benchmarking data for the given
- * interface
+ * @brief Aggregated execution-time statistics for one interface, in nanoseconds.
  */
 struct Monitor_InterfaceUsageData {
+	// Per-interface execution statistics are collected in nanoseconds.
 	enum interfaces_enum interface;
 	uint64_t maximum_execution_time;
 	uint64_t minimum_execution_time;
@@ -48,6 +48,8 @@ struct Monitor_InterfaceUsageData {
 
 /**
  * @brief   Struct representing cpu usage data
+ *
+ * CPU usage is tracked as a rolling min/max/average for the idle thread.
  */
 struct Monitor_CPUUsageData {
 	float maximum_cpu_usage;
@@ -56,7 +58,7 @@ struct Monitor_CPUUsageData {
 };
 
 /**
- * @brief   Struct representing two possible types of entry value
+ * @brief Kinds of entries stored in the activation log.
  */
 enum Monitor_EntryType {
 	Monitor_EntryType_activation = 0,
@@ -65,6 +67,8 @@ enum Monitor_EntryType {
 
 /**
  * @brief   Struct representing the interface activation entry
+ *
+ * Activation logs store the interface and edge type together with a timestamp.
  */
 struct Monitor_InterfaceActivationEntry {
 	enum interfaces_enum interface;
@@ -76,7 +80,7 @@ struct Monitor_InterfaceActivationEntry {
  * @brief                                       Typedef of callback indicating interface message queue overflow
  *
  * @param[in] interface                         represents interface which queue overflowed
- * @param[in] number_of_overflowed_messages     represents number of overflowed messages
+ * @param[in] number_of_overflowed_messages     represents number of overflowed (dropped) messages
  *
  */
 typedef void (*Monitor_MessageQueueOverflow)(
@@ -189,7 +193,7 @@ bool Monitor_IndicateInterfaceActivated(const enum interfaces_enum interface);
 bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface);
 
 /**
- * @brief                                            Provides access to optional interface activation log.
+ * @brief                                            Provides access to the optional interface activation log.
  *
  * @param[out] activation_log                        pointer pointing to beginning of cyclic buffer holding
  *                                                   all activation entries

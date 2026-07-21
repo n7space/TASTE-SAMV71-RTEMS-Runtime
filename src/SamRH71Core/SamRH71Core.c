@@ -46,6 +46,7 @@ static Mpu mpu;
 
 static uint64_t extract_main_oscillator_frequency(void)
 {
+	// Derive the base clock from the PMC main-clock source configuration.
 	Pmc_MainckConfig main_clock_config;
 	Pmc_getMainckConfig(&pmc, &main_clock_config);
 
@@ -84,6 +85,7 @@ static uint64_t extract_main_oscillator_frequency(void)
 static void apply_plla_config(Pmc_MasterckConfig *master_clock_config,
 			      uint64_t *mck_frequency)
 {
+	// Fold the PLLA settings into the clock frequency when PLLACK is selected.
 	if (master_clock_config->src == Pmc_MasterckSrc_Pllack) {
 		Pmc_PllConfig pll_config;
 		Pmc_getPllConfig(&pmc, &pll_config);
@@ -116,7 +118,7 @@ static void SamRH71Core_InitMatrix()
 		Matrix_Slave_Flexram1,
 		Matrix_Slave_Flexram2,
 	};
-    const uint32_t flexramSlavesCount = 3;
+	const uint32_t flexramSlavesCount = 3;
 	const Matrix_SlaveRegionProtectionConfig config = {
 		.isPrivilegedRegionUserWriteAllowed = true,
 		.isPrivilegedRegionUserReadAllowed = true,

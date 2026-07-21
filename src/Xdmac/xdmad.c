@@ -104,6 +104,7 @@ static uint32_t XDMAD_AllocateXdmacChannel(sXdmad *pXdmad, uint8_t bSrcID,
 					   uint8_t bDstID)
 {
 	uint32_t i;
+	// Reject unsupported peripheral-to-peripheral transfers before allocation.
 	/* Can't support peripheral to peripheral */
 	if (((bSrcID != XDMAD_TRANSFER_MEMORY) &&
 	     (bDstID != XDMAD_TRANSFER_MEMORY))) {
@@ -164,6 +165,7 @@ void XDMAD_Initialize(sXdmad *pXdmad, uint8_t bPollingMode)
 
 	assert(pXdmad);
 
+	// Initialize the shared XDMAC driver state once under the global lock.
 	const rtems_status_code obtainResult = rtems_semaphore_obtain(
 		xdmad_lock, RTEMS_WAIT, RTEMS_NO_TIMEOUT);
 	assert(obtainResult == RTEMS_SUCCESSFUL);
@@ -207,6 +209,7 @@ uint32_t XDMAD_AllocateChannel(sXdmad *pXdmad, uint8_t bSrcID, uint8_t bDstID)
 	uint32_t volatile timer = 0x7FF;
 	assert(xdmad_lock);
 
+	// Serialize channel allocation so concurrent users do not race the pool.
 	const rtems_status_code obtainResult =
 		rtems_semaphore_obtain(xdmad_lock, RTEMS_WAIT, timer);
 	if (obtainResult == RTEMS_SUCCESSFUL) {

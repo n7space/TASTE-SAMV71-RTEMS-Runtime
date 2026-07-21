@@ -27,10 +27,11 @@
 extern const uint32_t bsp_section_rtemsstack_end;
 extern DeathReportWriter_DeathReport DEATH_REPORT_BEGIN;
 
-static void
-save_stack(DeathReportWriter_DeathReport *const death_report)
+static void save_stack(DeathReportWriter_DeathReport *const death_report)
 {
-	/* Calculate available stack space in bytes. DEATH_REPORT_STACK_TRACE_SIZE is
+	/* Copy the active stack region into the report, capped to the report buffer.
+	 *
+	 * Calculate available stack space in bytes. DEATH_REPORT_STACK_TRACE_SIZE is
 	 * in words, so max capacity is DEATH_REPORT_STACK_TRACE_SIZE * sizeof(uint32_t)
 	 * bytes. */
 	const uint32_t available_bytes =
@@ -72,6 +73,7 @@ static uint16_t calculate_crc(const uint8_t *const data, const size_t length)
 static uint16_t calculate_report_crc(const void *const report,
 				     const size_t total_size)
 {
+	// Compute the checksum over the report payload, excluding the CRC field.
 	const uint8_t *const address_without_crc =
 		(const uint8_t *)report + sizeof(uint16_t);
 	const size_t size_without_crc = total_size - sizeof(uint16_t);
@@ -89,6 +91,7 @@ bool DeathReportWriter_GenerateDeathReport()
 	DeathReportWriter_DeathReport *const death_report =
 		(DeathReportWriter_DeathReport *)&DEATH_REPORT_BEGIN;
 
+	// Populate the shared death-report area before the fatal reset path runs.
 	save_stack(death_report);
 
 	death_report->padding = 0u;

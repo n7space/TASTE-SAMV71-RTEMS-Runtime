@@ -56,6 +56,7 @@ static void schedule_next_tick(const uint32_t cyclic_request_data_index)
 	const rtems_id timer_id =
 		cyclic_request_data[cyclic_request_data_index].timer_id;
 
+	// Re-arm the cyclic request timer for the next dispatch instant.
 	cyclic_request_data[cyclic_request_data_index].next_wakeup_ticks +=
 		cyclic_request_data[cyclic_request_data_index].interval_ticks;
 	rtems_interval delta = cyclic_request_data[cyclic_request_data_index]
@@ -80,6 +81,7 @@ static void timer_callback(rtems_id timer_id, void *cyclic_request_data_index)
 static void update_execution_time_data(const uint32_t thread_id,
 				       const uint64_t thread_execution_time)
 {
+	// Fold the latest request duration into min/max/mean statistics.
 	if (thread_execution_time <
 	    threads_info[thread_id].min_thread_execution_time) {
 		threads_info[thread_id].min_thread_execution_time =
@@ -143,6 +145,7 @@ bool ThreadsCommon_ProcessRequest(const void *const request_data,
 {
 	call_function cast_user_function = (call_function)user_function;
 
+	// Measure one request execution and update per-thread monitoring data.
 	Monitor_IndicateInterfaceActivated(
 		(const enum interfaces_enum)thread_id);
 

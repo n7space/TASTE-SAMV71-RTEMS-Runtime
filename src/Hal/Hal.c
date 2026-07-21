@@ -134,6 +134,7 @@ void Hal_ResetWatchdog()
 
 void timer_irq_handler()
 {
+	// Count elapsed timer reloads and mark the snapshot as dirty for readers.
 	__atomic_fetch_add(&reloads_counter, 1u, __ATOMIC_RELAXED);
 	ConcurrentAccessFlag_set(&reloads_modified_flag);
 
@@ -143,6 +144,7 @@ void timer_irq_handler()
 
 static void Hal_InitTimer(void)
 {
+	// Configure the periodic timer that backs elapsed-time and sleep services.
 	reloads_counter = 0u;
 #if defined(N7S_TARGET_SAMV71Q21)
 	SamV71Core_EnablePeripheralClock(Pmc_PeripheralId_Tc0Ch0);
@@ -202,6 +204,7 @@ bool Hal_Init(void)
 
 uint64_t Hal_GetElapsedTimeInNs(void)
 {
+	// Read reload and timer state until a consistent snapshot is observed.
 	uint32_t reloads;
 	uint32_t ticks;
 
@@ -226,6 +229,7 @@ uint64_t Hal_GetElapsedTimeInNs(void)
 
 bool Hal_SleepNs(uint64_t time_ns)
 {
+	// Convert the requested duration to RTEMS ticks and sleep for that span.
 	const double sleep_tick_count =
 		time_ns * ((double)main_clock_frequency / NANOSECOND_IN_SECOND);
 

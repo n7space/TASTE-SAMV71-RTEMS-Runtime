@@ -45,6 +45,7 @@
 
 rtems_task Init(rtems_task_argument argument)
 {
+	// Minimal RTEMS entry point used to prove the runtime links and initializes.
 	Hal_Init();
 }
 

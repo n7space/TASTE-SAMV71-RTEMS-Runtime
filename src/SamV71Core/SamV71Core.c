@@ -42,6 +42,7 @@ static Mpu mpu;
 
 static uint64_t extract_main_oscillator_frequency(void)
 {
+	// Derive the base clock from the PMC main-clock source configuration.
 	Pmc_MainckConfig main_clock_config;
 	Pmc_getMainckConfig(&pmc, &main_clock_config);
 
@@ -76,6 +77,7 @@ static uint64_t extract_main_oscillator_frequency(void)
 static void apply_plla_config(Pmc_MasterckConfig *master_clock_config,
 			      uint64_t *mck_frequency)
 {
+	// Fold the PLLA settings into the clock frequency when PLLACK is selected.
 	if (master_clock_config->src == Pmc_MasterckSrc_Pllack) {
 		Pmc_PllConfig pll_config;
 		Pmc_getPllConfig(&pmc, &pll_config);

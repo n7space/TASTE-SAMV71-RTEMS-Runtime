@@ -24,6 +24,7 @@ enum Reset_Reason BootHelper_GetResetReason()
 {
 	const Rstc_ResetType reset_type = Rstc_getLastResetType();
 
+	// Map the hardware reset cause to the runtime's public reset reason enum.
 	switch (reset_type) {
 	case Rstc_ResetType_Powerup: {
 		return Reset_Reason_Powerup;

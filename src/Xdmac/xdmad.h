@@ -77,7 +77,7 @@
 /** \addtogroup dmad_structs DMA Driver Structs
         @{*/
 
-/** DMA status or return code */
+/** @brief DMA status or return code. */
 typedef enum _XdmadStatus {
 	XDMAD_OK = 0, /**< Operation is successful */
 	XDMAD_PARTIAL_DONE,
@@ -88,7 +88,7 @@ typedef enum _XdmadStatus {
 } eXdmadStatus,
 	eXdmadRC;
 
-/** DMA state for channel */
+/** @brief Lifecycle state of one DMA channel. */
 typedef enum _XdmadState {
 	XDMAD_STATE_FREE = 0, /**< Free channel */
 	XDMAD_STATE_ALLOCATED, /**< Allocated to some peripheral */
@@ -98,31 +98,31 @@ typedef enum _XdmadState {
 	XDMAD_STATE_HALTED, /**< DMA transfer stopped */
 } eXdmadState;
 
-/** DMA Programming state for channel */
+/** @brief Programming mode used for a DMA channel transfer. */
 typedef enum _XdmadProgState {
 	XDMAD_SINGLE = 0,
 	XDMAD_MULTI,
 	XDMAD_LLI,
 } eXdmadProgState;
 
-/** DMA transfer callback */
+/** @brief Callback invoked when a DMA transfer completes or changes state. */
 typedef void (*XdmadTransferCallback)(uint32_t iChannel, void *pArg);
 
-/** DMA driver channel */
+/** @brief Per-channel bookkeeping used by the XDMAC driver instance. */
 typedef struct _XdmadChannel {
-	XdmadTransferCallback fCallback; /**< Callback */
-	void *pArg; /**< Callback argument */
-	uint8_t bIrqOwner; /**< Uses DMA handler or external one */
-	uint8_t bSrcPeriphID; /**< HW ID for source */
-	uint8_t bDstPeriphID; /**< HW ID for destination */
-	uint8_t bSrcTxIfID; /**< DMA Tx Interface ID for source */
-	uint8_t bSrcRxIfID; /**< DMA Rx Interface ID for source */
-	uint8_t bDstTxIfID; /**< DMA Tx Interface ID for destination */
-	uint8_t bDstRxIfID; /**< DMA Rx Interface ID for destination */
-	volatile uint8_t state; /**< DMA channel state */
+	XdmadTransferCallback fCallback; /**< Completion callback. */
+	void *pArg; /**< Optional callback argument. */
+	uint8_t bIrqOwner; /**< True when the DMA handler owns the interrupt. */
+	uint8_t bSrcPeriphID; /**< Source peripheral ID. */
+	uint8_t bDstPeriphID; /**< Destination peripheral ID. */
+	uint8_t bSrcTxIfID; /**< Source Tx handshake interface ID. */
+	uint8_t bSrcRxIfID; /**< Source Rx handshake interface ID. */
+	uint8_t bDstTxIfID; /**< Destination Tx handshake interface ID. */
+	uint8_t bDstRxIfID; /**< Destination Rx handshake interface ID. */
+	volatile uint8_t state; /**< Channel state. */
 } sXdmadChannel;
 
-/** DMA driver instance */
+/** @brief DMA driver instance that owns the controller and its channels. */
 typedef struct _Xdmad {
 	Xdmac *pXdmacs;
 	sXdmadChannel XdmaChannels[XDMACCHID_NUMBER];
@@ -134,83 +134,87 @@ typedef struct _Xdmad {
 } sXdmad;
 
 typedef struct _XdmadCfg {
-	/** Microblock Control Member. */
+	/** Microblock control register value. */
 	uint32_t mbr_ubc;
-	/** Source Address Member. */
+	/** Source address register value. */
 	uint32_t mbr_sa;
-	/** Destination Address Member. */
+	/** Destination address register value. */
 	uint32_t mbr_da;
-	/** Configuration Register. */
+	/** Channel configuration register value. */
 	uint32_t mbr_cfg;
-	/** Block Control Member. */
+	/** Block control register value. */
 	uint32_t mbr_bc;
-	/** Data Stride Member. */
+	/** Data stride register value. */
 	uint32_t mbr_ds;
-	/** Source Microblock Stride Member. */
+	/** Source microblock stride register value. */
 	uint32_t mbr_sus;
-	/** Destination Microblock Stride Member. */
+	/** Destination microblock stride register value. */
 	uint32_t mbr_dus;
 } sXdmadCfg;
 
-/** \brief Structure for storing parameters for DMA view0 that can be
- * performed by the DMA Master transfer.*/
+/**
+ * @brief Linked-list descriptor format 0 used by XDMAC master transfers.
+ */
 typedef struct _LinkedListDescriptorView0 {
-	/** Next Descriptor Address number. */
+	/** Next descriptor address. */
 	uint32_t mbr_nda;
-	/** Microblock Control Member. */
+	/** Microblock control value. */
 	uint32_t mbr_ubc;
-	/** Transfer Address Member. */
+	/** Transfer address. */
 	uint32_t mbr_ta;
 } LinkedListDescriptorView0;
 
-/** \brief Structure for storing parameters for DMA view1 that can be
- * performed by the DMA Master transfer.*/
+/**
+ * @brief Linked-list descriptor format 1 used by XDMAC master transfers.
+ */
 typedef struct _LinkedListDescriptorView1 {
-	/** Next Descriptor Address number. */
+	/** Next descriptor address. */
 	uint32_t mbr_nda;
-	/** Microblock Control Member. */
+	/** Microblock control value. */
 	uint32_t mbr_ubc;
-	/** Source Address Member. */
+	/** Source address. */
 	uint32_t mbr_sa;
-	/** Destination Address Member. */
+	/** Destination address. */
 	uint32_t mbr_da;
 } LinkedListDescriptorView1;
 
-/** \brief Structure for storing parameters for DMA view2 that can be
- * performed by the DMA Master transfer.*/
+/**
+ * @brief Linked-list descriptor format 2 used by XDMAC master transfers.
+ */
 typedef struct _LinkedListDescriptorView2 {
-	/** Next Descriptor Address number. */
+	/** Next descriptor address. */
 	uint32_t mbr_nda;
-	/** Microblock Control Member. */
+	/** Microblock control value. */
 	uint32_t mbr_ubc;
-	/** Source Address Member. */
+	/** Source address. */
 	uint32_t mbr_sa;
-	/** Destination Address Member. */
+	/** Destination address. */
 	uint32_t mbr_da;
-	/** Configuration Register. */
+	/** Channel configuration register value. */
 	uint32_t mbr_cfg;
 } LinkedListDescriptorView2;
 
-/** \brief Structure for storing parameters for DMA view3 that can be
- * performed by the DMA Master transfer.*/
+/**
+ * @brief Linked-list descriptor format 3 used by XDMAC master transfers.
+ */
 typedef struct _LinkedListDescriptorView3 {
-	/** Next Descriptor Address number. */
+	/** Next descriptor address. */
 	uint32_t mbr_nda;
-	/** Microblock Control Member. */
+	/** Microblock control value. */
 	uint32_t mbr_ubc;
-	/** Source Address Member. */
+	/** Source address. */
 	uint32_t mbr_sa;
-	/** Destination Address Member. */
+	/** Destination address. */
 	uint32_t mbr_da;
-	/** Configuration Register. */
+	/** Channel configuration register value. */
 	uint32_t mbr_cfg;
-	/** Block Control Member. */
+	/** Block control value. */
 	uint32_t mbr_bc;
-	/** Data Stride Member. */
+	/** Data stride value. */
 	uint32_t mbr_ds;
-	/** Source Microblock Stride Member. */
+	/** Source microblock stride value. */
 	uint32_t mbr_sus;
-	/** Destination Microblock Stride Member. */
+	/** Destination microblock stride value. */
 	uint32_t mbr_dus;
 } LinkedListDescriptorView3;
 
