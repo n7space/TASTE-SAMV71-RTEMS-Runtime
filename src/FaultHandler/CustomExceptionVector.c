@@ -28,6 +28,10 @@ extern const char _ISR_Stack_area_end[];
 
 void __attribute__((naked, aligned(8))) Fault_Handler();
 
+/** @brief Interrupt table to provide direct access for FaultHandler
+ *
+ * @satisfies MBEP-RT_FUN-330
+ */
 __attribute__((section(".vector"), aligned(VECTOR_TABLE_ALIGNMENT)))
 const Nvic_VectorTable exception_table = {
   // Route fatal exceptions to the custom fault handler and normal IRQs to RTEMS.

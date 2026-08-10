@@ -41,6 +41,8 @@ enum Reset_Reason {
  * @brief               Returns information about reason of hardware reset
  *
  * @return              Enum representing possible reasons of hardware reset
+ *
+ * @satisfies MBEP-RT-FUN-310
  */
 enum Reset_Reason BootHelper_GetResetReason();
 

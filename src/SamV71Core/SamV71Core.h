@@ -35,6 +35,8 @@
 
 /**
  * @brief Initialize the SAMV71 core helper module.
+ *
+ * @satisfies MBEP-RT-FUN-710, MBEP-RT-FUN-720
  */
 void SamV71Core_Init(void);
 

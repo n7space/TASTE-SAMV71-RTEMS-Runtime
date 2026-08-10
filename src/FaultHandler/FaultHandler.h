@@ -23,6 +23,8 @@
 /**
  * @file    FaultHandler.h
  * @brief   Header for FaultHandler
+ *
+ * @satisfies MBEP-RT-FUN-320
  */
 
 #include <stdbool.h>
@@ -34,6 +36,8 @@
  *
  * @return                      Bool indicating whether the initialization was
  *                              successful
+ *
+ * @satisfies MBEP-RT-FUN-330
  */
 bool FaultHandler_Init(void);
 

@@ -114,6 +114,8 @@ bool Monitor_MonitoringTick(void);
  *                              interface, it is considered an output parameter
  *
  * @return                      Bool indicating whether the query about usage data was successful
+ *
+ * @satisfies                   MBEP-RT-FUN-630, MBEP-RT-FUN-640, MBEP-RT-FUN-650
  */
 bool Monitor_GetUsageData(const enum interfaces_enum interface,
 			  struct Monitor_InterfaceUsageData *const usage_data);
@@ -126,6 +128,8 @@ bool Monitor_GetUsageData(const enum interfaces_enum interface,
  *                              not used by any sporadic/cyclic interface
  *
  * @return                      Bool indicating whether the query about CPU usage data was successful
+ *
+ * @satisfies                   MBEP-RT-FUN-610
  */
 bool Monitor_GetIdleCPUUsageData(
 	struct Monitor_CPUUsageData *const cpu_usage_data);
@@ -136,6 +140,8 @@ bool Monitor_GetIdleCPUUsageData(
  * @param[in] interface         represents interface to obtain information about stack usage
  *
  * @return                      represents maximum stack usage in bytes if >= 0, and error otherwise.
+ *
+ * @satisfies                   MBEP-RT-FUN-620
  */
 int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface);
 
@@ -145,6 +151,8 @@ int32_t Monitor_GetMaximumStackUsage(const enum interfaces_enum interface);
  * @param[in] overflow_callback  pointer to function that implements message queue overflow callback
  *
  * @return                       indicates whether the set was successful.
+ *
+ * @satisfies                    MBEP-RT-FUN-350
  */
 bool Monitor_SetMessageQueueOverflowCallback(
 	Monitor_MessageQueueOverflow overflow_callback);
@@ -155,6 +163,8 @@ bool Monitor_SetMessageQueueOverflowCallback(
  * @param[in] interface          represents interface to obtain information about stack usage
  *
  * @return                       represents the number of queued items in interface queue if >= 0, and UINT32_MAX otherwise.
+ *
+ * @satisfies                    MBEP-RT-FUN-660
  */
 uint32_t Monitor_GetQueuedItemsCount(const enum interfaces_enum interface);
 
@@ -201,6 +211,8 @@ bool Monitor_IndicateInterfaceDeactivated(const enum interfaces_enum interface);
  * @param[out] out_size_of_activation_log            representing size of activation log
  *
  * @return                                           Bool indicating whether the query was successful
+ *
+ * @satisfies                                        MBEP-RT-FUN-670
  */
 bool Monitor_GetInterfaceActivationEntryLog(
 	struct Monitor_InterfaceActivationEntry **activation_log,

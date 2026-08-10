@@ -35,6 +35,8 @@
 
 /**
  * @brief Initialize the SAMRH71 core helper module.
+ *
+ * @satisfies MBEP-RT-FUN-710, MBEP-RT-FUN-720, MBEP-RT-PER-010
  */
 void SamRH71Core_Init(void);
 
