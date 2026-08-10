@@ -45,7 +45,9 @@ bool Hal_Init(void);
  * @brief               Returns time elapsed from the initialization of the
  *                      runtime
  *
- * @return              Time elapsed from the initialization of the runtime
+ * @return              Time elapsed from the initialization of the runtime in nanoseconds
+ *
+ * @satisfies MBEP-RT-FUN-370, MBEP-RT-IF-310
  */
 uint64_t Hal_GetElapsedTimeInNs(void);
 

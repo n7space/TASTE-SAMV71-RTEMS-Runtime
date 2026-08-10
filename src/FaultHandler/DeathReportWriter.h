@@ -37,6 +37,17 @@
  */
 bool DeathReportWriter_Init(void);
 
+/**
+ * @brief                       Generates Death Report and saves it in configurable memory location.
+ *
+ *                              The location of saved Death Report is configured by providing symbol
+ *                              DEATH_REPORT_BEGIN by linker script.
+ *
+ * @return                      Bool indicating whether the initialization was
+ *                              successful
+ *
+ * @satisfies MBEP-RT-FUN-331, MBEP-RT-IF-110, MBEP-RT-IF-120
+ */
 bool DeathReportWriter_GenerateDeathReport();
 
 #endif
